@@ -36,6 +36,7 @@ Backend :
 Base de données :
 - users
 - refresh_tokens
+- login_attempts
 - campaigns
 - refusal_reasons
 - prospects
