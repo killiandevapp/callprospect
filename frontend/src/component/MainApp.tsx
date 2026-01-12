@@ -35,8 +35,8 @@ export default function MainApp({ user, logout }: MainAppProps) {
       {loading && <p>Chargement...</p>}
 
       {!loading && hasProspects === false && <AddProspects />}
-
       {!loading && hasProspects === true && <CallProspects />}
+
     </div>
   );
 }
