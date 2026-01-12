@@ -30,3 +30,70 @@ export async function createCampaignRepo(params: {
   );
   return r.insertId as number;
 }
+
+export async function saveCampaignSetup(params: {
+  userId: number;
+  campaignId: number;
+  source?: string;
+  refusalReasons: string[];
+}): Promise<void> {
+  const { userId, campaignId, source, refusalReasons } = params;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [rows] = await conn.query<any[]>(
+      "SELECT id FROM campaigns WHERE id = ? AND user_id = ? LIMIT 1",
+      [campaignId, userId]
+    );
+    if (rows.length === 0) {
+      throw new Error("CAMPAIGN_NOT_FOUND");
+    }
+
+    await conn.query("UPDATE campaigns SET source = ? WHERE id = ?", [
+      source || null,
+      campaignId,
+    ]);
+
+    await conn.query("DELETE FROM refusal_reasons WHERE campaign_id = ?", [
+      campaignId,
+    ]);
+
+    if (refusalReasons.length > 0) {
+      const values = refusalReasons.map((label) => [campaignId, label]);
+      await conn.query(
+        "INSERT INTO refusal_reasons (campaign_id, label) VALUES ?",
+        [values]
+      );
+    }
+
+    await conn.commit();
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
+export async function insertManualProspects(params: {
+  campaignId: number;
+  prospects: { name: string; phone: string; notes?: string }[];
+}): Promise<void> {
+  const { campaignId, prospects } = params;
+
+  if (prospects.length === 0) return;
+
+  const values = prospects.map((p) => [
+    campaignId,
+    p.name,
+    p.phone,
+    p.notes || null,
+  ]);
+
+  await pool.query(
+    "INSERT INTO prospects (campaign_id, name, phone, notes) VALUES ?",
+    [values]
+  );
+}
