@@ -2,8 +2,8 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import { register, login, refresh, logout } from "./auth/controller";
 import { requireAuth, requireCsrf } from "./auth/middleware";
-import { verifyCampaign, createCampaign } from "./campaign/controller";
-
+import { verifyCampaign, createCampaign, setupCampaign } from "./campaign/controller";
+import { listProspects } from "./prospect/controller";
 
 const router = express.Router();
 
@@ -18,9 +18,18 @@ router.post("/auth/login", loginLimiter, login); // Connexion (protégée)
 router.post("/auth/refresh", refresh);          // Rafraîchir token
 router.post("/auth/logout", logout);            // Déconnexion
 
-// campagne
+// CAMPAIGN
 router.get("/campaign", requireAuth, verifyCampaign);
 router.post("/campaign", requireAuth, requireCsrf, createCampaign);
+router.post(
+  "/campaign/setup",
+  requireAuth,
+  requireCsrf,
+  setupCampaign
+);
+
+// PROSPECTS
+router.get("/prospects", requireAuth, listProspects);
 
 // Routes PROTÉGÉES (nécessitent auth)
 router.get("/me", requireAuth, (req, res) => res.json({ user: req.user }));
