@@ -16,6 +16,7 @@ L’objectif est de remplacer l’usage de feuilles, de tableurs ou de notes per
 - Gestion des motifs de refus (propres à chaque campagne)
 - Historique des appels
 - Statistiques simples par campagne
+- Test CI
 
 ---
 
