@@ -8,7 +8,7 @@ export default function CreateCampaign() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const formCompaign = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
@@ -43,7 +43,7 @@ export default function CreateCampaign() {
     <div style={{ maxWidth: 400, margin: "40px auto" }}>
       <h2>Créer une campagne</h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={formCompaign}>
         <div style={{ marginBottom: 12 }}>
           <label>
             Nom de la campagne<br />

@@ -97,3 +97,34 @@ export async function insertManualProspects(params: {
     [values]
   );
 }
+
+
+export type RefusalReasonRow = {
+  id: number;
+  campaign_id: number;
+  label: string;
+  created_at: Date;
+};
+
+// Dernière campagne active de l'utilisateur (pratique si on n'envoie pas l'id)
+export async function findLastCampaignForUser(
+  userId: number
+): Promise<CampaignRow | null> {
+  const [rows] = await pool.query<any[]>(
+    "SELECT * FROM campaigns WHERE user_id = ? AND is_archived = 0 ORDER BY created_at DESC LIMIT 1",
+    [userId]
+  );
+  if (rows.length === 0) return null;
+  return rows[0] as CampaignRow;
+}
+
+// Motifs de refus pour une campagne
+export async function getRefusalReasonsByCampaign(
+  campaignId: number
+): Promise<RefusalReasonRow[]> {
+  const [rows] = await pool.query<any[]>(
+    "SELECT * FROM refusal_reasons WHERE campaign_id = ? ORDER BY created_at ASC",
+    [campaignId]
+  );
+  return rows as RefusalReasonRow[];
+}
