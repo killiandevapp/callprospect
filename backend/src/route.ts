@@ -2,9 +2,9 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import { register, login, refresh, logout } from "./auth/controller";
 import { requireAuth, requireCsrf } from "./auth/middleware";
-import { verifyCampaign, createCampaign, setupCampaign } from "./campaign/controller";
+import { verifyCampaign, createCampaign, setupCampaign, getRefusalReasons } from "./campaign/controller";
 import { listProspects } from "./prospect/controller";
-
+import { logCall } from "./call/controller"; 
 const router = express.Router();
 
 // Limite 10 login/minute (anti-brute force)
@@ -31,6 +31,12 @@ router.post(
 // PROSPECTS
 router.get("/prospects", requireAuth, listProspects);
 
+router.get(
+  "/campaign/refusal-reasons",
+  requireAuth,
+  getRefusalReasons
+);
+router.post("/calls", requireAuth, requireCsrf, logCall);
 // Routes PROTÉGÉES (nécessitent auth)
 router.get("/me", requireAuth, (req, res) => res.json({ user: req.user }));
 router.post("/secure-action", requireAuth, requireCsrf, (_req, res) => res.json({ ok: true }));

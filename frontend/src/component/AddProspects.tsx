@@ -60,11 +60,11 @@ export default function AddProspects() {
         setRefusalReasons(refusalReasons.filter((r) => r !== label));
     };
 
-    const handleModeChange = (newMode: Mode) => {
+    const modeGetContact = (newMode: Mode) => {
         setMode(newMode);
     };
 
-    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const fileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0] || null;
         setFile(f);
         setCsvCount(null);
@@ -89,7 +89,7 @@ export default function AddProspects() {
         reader.readAsText(f);
     };
 
-    const handleManualAdd = () => {
+    const manualAddFile = () => {
         const name = manualName.trim();
         const phone = manualPhone.trim();
 
@@ -124,7 +124,7 @@ export default function AddProspects() {
             await api.post("/campaign/setup", {
                 source: source.trim() || null,
                 refusalReasons: cleanedRefusals,
-                manualProspects, // ⬅️ très important : on envoie les prospects manuels
+                manualProspects, 
             });
 
             alert("Campagne configurée et prospects enregistrés.");
@@ -141,7 +141,6 @@ export default function AddProspects() {
             <h1>Vous revoilà !</h1>
             <p>Configurez votre campagne avant de commencer à appeler.</p>
 
-            {/* 1️⃣ Résultat d'un appel */}
             <section style={{ marginTop: 24 }}>
                 <h2>Définir le résultat d&apos;un appel</h2>
                 <p>Les statuts utilisés pendant la prospection :</p>
@@ -152,7 +151,6 @@ export default function AddProspects() {
                 </ul>
             </section>
 
-            {/* 2️⃣ Motifs de refus */}
             <section style={{ marginTop: 24 }}>
                 <h2>Définir les motifs de refus</h2>
                 <p>
@@ -181,7 +179,6 @@ export default function AddProspects() {
                 </ul>
             </section>
 
-            {/* 3️⃣ Source + ajout des prospects */}
             <section style={{ marginTop: 24 }}>
                 <h2>Source des prospects</h2>
                 <input
@@ -200,7 +197,7 @@ export default function AddProspects() {
                             type="radio"
                             name="mode"
                             checked={mode === "manual"}
-                            onChange={() => handleModeChange("manual")}
+                            onChange={() => modeGetContact("manual")}
                         />{" "}
                         Manuellement
                     </label>
@@ -210,7 +207,7 @@ export default function AddProspects() {
                             type="radio"
                             name="mode"
                             checked={mode === "file"}
-                            onChange={() => handleModeChange("file")}
+                            onChange={() => modeGetContact("file")}
                         />{" "}
                         Télécharger fichier
                     </label>
@@ -218,7 +215,7 @@ export default function AddProspects() {
 
                 {mode === "file" && (
                     <div style={{ marginTop: 12 }}>
-                        <input type="file" accept=".csv" onChange={handleFileChange} />
+                        <input type="file" accept=".csv" onChange={fileChange} />
                         {file && (
                             <div style={{ marginTop: 8 }}>
                                 <p>
@@ -257,7 +254,7 @@ export default function AddProspects() {
                                 onChange={(e) => setManualNotes(e.target.value)}
                             />
                         </div>
-                        <button style={{ marginTop: 8 }} onClick={handleManualAdd}>
+                        <button style={{ marginTop: 8 }} onClick={manualAddFile}>
                             Ajouter le prospect
                         </button>
 

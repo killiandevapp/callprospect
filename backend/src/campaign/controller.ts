@@ -5,6 +5,8 @@ import {
   createCampaignRepo,
   saveCampaignSetup,
   insertManualProspects,
+  findLastCampaignForUser,
+  getRefusalReasonsByCampaign,
 } from "./repo";
 
 // -------- GET /api/campaign --------
@@ -137,5 +139,46 @@ export async function setupCampaign(req: Request, res: Response) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
+  }
+}
+
+
+
+export async function getRefusalReasons(req: Request, res: Response) {
+  try {
+    const userId = Number((req as any).user.sub);
+
+    // possibilité de passer ?campaignId=123
+    const campaignIdParam = req.query.campaignId as string | undefined;
+    let campaignId: number;
+
+    if (campaignIdParam) {
+      campaignId = Number(campaignIdParam);
+      if (!Number.isFinite(campaignId)) {
+        return res.status(400).json({ message: "campaignId invalide" });
+      }
+    } else {
+      // sinon : on prend la dernière campagne active de l'utilisateur
+      const last = await findLastCampaignForUser(userId);
+      if (!last) {
+        return res
+          .status(404)
+          .json({ message: "Aucune campagne active pour cet utilisateur." });
+      }
+      campaignId = last.id;
+    }
+
+    const reasons = await getRefusalReasonsByCampaign(campaignId);
+
+    return res.json({
+      campaignId,
+      reasons: reasons.map((r) => ({
+        id: r.id,
+        label: r.label,
+      })),
+    });
+  } catch (err) {
+    console.error("Error getRefusalReasons:", err);
+    return res.status(500).json({ message: "Erreur serveur" });
   }
 }

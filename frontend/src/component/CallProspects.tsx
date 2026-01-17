@@ -1,5 +1,8 @@
+// src/component/CallProspects.tsx
 import { useEffect, useState } from "react";
 import { api } from "../api/axios";
+import ModalCall from "./modalCall";
+import { useCallTimer } from "../hooks/useCallTimer";
 
 type Prospect = {
   id: number;
@@ -10,36 +13,59 @@ type Prospect = {
 
 type CallResult = "meeting" | "refused" | "no_answer" | "callback";
 
+type RefusalReason = {
+  id: number;
+  label: string;
+};
+
+const CALL_ACTIONS: { label: string; result: CallResult }[] = [
+  { label: "RDV ✅", result: "meeting" },
+  { label: "Refus ❌", result: "refused" },
+  { label: "Décroche pas", result: "no_answer" },
+  { label: "À relancer", result: "callback" },
+];
+type Mode = "list" | "call";
+
+type CallToSave = {
+  prospectId: number;
+  result: CallResult;
+  durationSec: number;
+};
+
 export default function CallProspects() {
   const [prospects, setProspects] = useState<Prospect[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // appel en cours
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
-  const [timer, setTimer] = useState<number>(0);
-  const [timerRunning, setTimerRunning] = useState<boolean>(false);
-  const [callStartedAt, setCallStartedAt] = useState<number | null>(null);
 
-  type Mode = "list" | "call";
+
   const [mode, setMode] = useState<Mode>("list");
 
+  const { seconds, running, start, stop, reset } = useCallTimer();
+  const [callStartedAt, setCallStartedAt] = useState<number | null>(null);
+
+
+  const [pendingCall, setPendingCall] = useState<CallToSave | null>(null);
+
+  const [refusalReasons, setRefusalReasons] = useState<RefusalReason[]>([]);
+  const [selectedRefusalReasonId, setSelectedRefusalReasonId] = useState<number | null>(null);
+
+
   const currentProspect =
-    currentIndex !== null && currentIndex >= 0 && currentIndex < prospects.length
+    currentIndex !== null &&
+      currentIndex >= 0 &&
+      currentIndex < prospects.length
       ? prospects[currentIndex]
       : null;
 
-  // Charger les prospects depuis l'API
+  // Load prospects
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
-        setError(null);
-
         const res = await api.get("/prospects");
         setProspects(res.data.prospects || []);
       } catch (err) {
-        console.error(err);
         setError("Impossible de charger les prospects.");
       } finally {
         setLoading(false);
@@ -47,143 +73,161 @@ export default function CallProspects() {
     })();
   }, []);
 
-  //  Gestion du chrono
+
+
+
   useEffect(() => {
-    if (!timerRunning) return;
+    // Pas d’appel en attente → rien à faire
+    if (!pendingCall) return;
 
-    const id = window.setInterval(() => {
-      setTimer((t) => t + 1);
-    }, 1000);
+    // On gere ici uniquement le cas refus
+    if (pendingCall.result !== "refused") return;
 
-    return () => window.clearInterval(id);
-  }, [timerRunning]);
+    // Si aucun motif encore choisi → on attend
+    if (!selectedRefusalReasonId) return;
 
-  const formatTime = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
+    console.log("➡ Envoi en BDD de l’appel refusé", {
+      pendingCall,
+      selectedRefusalReasonId,
+    });
 
-  // 3️⃣ Lancer l'appel : tel: + démarrer le chrono
+    (async () => {
+      try {
+        await api.post("/calls", {
+          ...pendingCall,
+          refusalReasonId: selectedRefusalReasonId, 
+        });
+
+        // Mise à jour de la liste (comme dans callResult)
+        setProspects((prev) => {
+          const copy = [...prev];
+          const index = prev.findIndex((p) => p.id === pendingCall.prospectId);
+          if (index === -1) return copy;
+
+          const [removed] = copy.splice(index, 1);
+
+          if (pendingCall.result === "no_answer") {
+            const mid = Math.floor(copy.length / 2);
+            copy.splice(mid, 0, removed);
+          }
+
+          return copy;
+        });
+      } catch (err) {
+        console.error("Erreur lors de l’enregistrement de l’appel refusé :", err);
+      } finally {
+        // reset global UI
+        setMode("list");
+        reset();
+        setCurrentIndex(null);
+        setCallStartedAt(null);
+        setRefusalReasons([]);
+        setSelectedRefusalReasonId(null);
+        setPendingCall(null);
+      }
+    })();
+  }, [pendingCall, selectedRefusalReasonId]);
+
+
   const startCall = (index: number) => {
     if (index < 0 || index >= prospects.length) return;
 
     const p = prospects[index];
-
     setCurrentIndex(index);
-    setTimer(0);
-    setTimerRunning(true);
+    start(); 
     setCallStartedAt(Date.now());
     setMode("call");
-
-    // Lance l'appli téléphone (mobile) ou propose un softphone (desktop)
     window.location.href = `tel:${p.phone}`;
   };
 
-
-// Terminer l'appel avec un résultat
-const callResult = (result: CallResult) => {
-  if (!currentProspect || currentIndex === null) return;
-
-  setTimerRunning(false);
-
-  const durationSec =
-    callStartedAt !== null
-      ? Math.round((Date.now() - callStartedAt) / 1000)
-      : timer;
-
-  // payload commun pour la BDD
-  const payload = {
-    prospectId: currentProspect.id,
-    result,      // "meeting" | "refused" | "no_answer" | "callback"
-    durationSec, // à envoyer en BDD
-    // plus tard : refusalReasonId, meetingDate, note...
+  const closeModal = () => {
+    setMode("list");
+    stop();
+    reset();
+    setCurrentIndex(null);
+    setCallStartedAt(null);
+    setRefusalReasons([]);
   };
 
-  //  Ici on met la logique différente selon le résultat
-  if (result === "refused") {
-    // TODO: afficher l’écran avec la liste des motifs de refus
-    // (Pas le temps, Déjà équipé, Trop cher...)
-    console.log("Refus -> plus tard: demander un motif de refus", payload);
-  } else if (result === "meeting") {
-    // TODO: afficher un petit formulaire pour choisir la date/heure de RDV
-    console.log("RDV -> plus tard: demander une date de rendez-vous", payload);
-  } else if (result === "no_answer") {
-    // TODO: on garde une trace en BDD mais on remet le prospect dans la liste
-    console.log("Décroche pas -> garder en BDD et remettre dans la file", payload);
-  } else if (result === "callback") {
-    // TODO: marquer "à relancer" en BDD (prochaine relance, etc.)
-    console.log("À relancer -> marquer en BDD pour une relance", payload);
-  }
+  const callResult = (result: CallResult) => {
+    if (!currentProspect || currentIndex === null) return;
 
-  // Gestion de la liste de prospects côté front
-  setProspects((prev) => {
-    const copy = [...prev];
-    const [removed] = copy.splice(currentIndex, 1);
+    stop();
+    const durationSec =
+      callStartedAt !== null
+        ? Math.round((Date.now() - callStartedAt) / 1000)
+        : seconds;
 
-    if (result === "no_answer") {
-      // Si la personne ne répond pas → on le remet au milieu de la liste
-      const middleIndex = Math.floor(copy.length / 2);
-      copy.splice(middleIndex, 0, removed);
+    const payload: CallToSave = {
+      prospectId: currentProspect.id,
+      result,
+      durationSec,
+    };
+
+
+    if (result === "refused") {
+
+
+      (async () => {
+        try {
+          const res = await api.get("/campaign/refusal-reasons");
+          // res.data = { campaignId, reasons: [...] }
+          setRefusalReasons(res.data.reasons || []);
+          setPendingCall(payload);
+
+          console.log("Motifs de refus chargés :", res.data);
+        } catch (err) {
+          console.log("erreur motifs de refus :", err);
+        }
+      })();
+
+
+      return;
     }
-    // Pour RDV / Refus / À relancer → on ne le remet pas dans la liste
-    return copy;
-  });
 
-  // reset de l'état UI (on reviendra plus tard pour les écrans RDV/refus)
-  setMode("list");
-  setCurrentIndex(null);
-  setTimer(0);
-  setCallStartedAt(null);
-};
+    if (result === "meeting") {
+      console.log("RDV -> plus tard: demander une date de rendez-vous", payload);
+    } else if (result === "no_answer") {
+      console.log(
+        "Décroche pas -> garder en BDD et remettre dans la file",
+        payload
+      );
+    } else if (result === "callback") {
+      console.log("A relancer -> marquer en BDD pour une relance", payload);
+    }
 
+    // remove or requeue
+    setProspects((prev) => {
+      const copy = [...prev];
+      const [removed] = copy.splice(currentIndex, 1);
+      if (result === "no_answer") {
+        const mid = Math.floor(copy.length / 2);
+        copy.splice(mid, 0, removed);
+      }
+      return copy;
+    });
 
+    setMode("list");
+    reset();
+    setCurrentIndex(null);
+    setCallStartedAt(null);
+    setRefusalReasons([]);
+  };
 
-  // RENDER
+  const elementTxt =
+    mode === "call" && currentProspect
+      ? {
+        title: "Appel en cours",
+        name: currentProspect.name,
+        phone: currentProspect.phone,
+        notes: currentProspect.notes ?? null,
+        seconds,
+        running,
+        actions: CALL_ACTIONS,
+        reasons: refusalReasons,
+      }
+      : null;
 
-  if (mode === "call" && currentProspect) {
-    return (
-      <div style={{ padding: 24 }}>
-        <h2>Appel en cours</h2>
-        <p>
-          <strong>{currentProspect.name}</strong> — {currentProspect.phone}
-        </p>
-        {currentProspect.notes && <p>Notes : {currentProspect.notes}</p>}
-
-        <p>Temps : {formatTime(timer)}</p>
-
-        <div style={{ marginTop: 16 }}>
-          <button onClick={() => callResult("meeting")}>RDV ✅</button>
-          <button onClick={() => callResult("refused")} style={{ marginLeft: 8 }}>
-            Refus ❌
-          </button>
-          <button onClick={() => callResult("no_answer")} style={{ marginLeft: 8 }}>
-            Décroche pas
-          </button>
-          <button onClick={() => callResult("callback")} style={{ marginLeft: 8 }}>
-            À relancer
-          </button>
-        </div>
-
-        <div style={{ marginTop: 16 }}>
-          <button
-            onClick={() => {
-              // annuler et revenir à la liste
-              setMode("list");
-              setTimerRunning(false);
-              setCurrentIndex(null);
-              setTimer(0);
-              setCallStartedAt(null);
-            }}
-          >
-            Retour à la liste
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // mode "liste"
   return (
     <div style={{ padding: 24 }}>
       <h2>Prospects à appeler</h2>
@@ -191,28 +235,30 @@ const callResult = (result: CallResult) => {
       {loading && <p>Chargement...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {!loading && !error && prospects.length === 0 && (
-        <p>Aucun prospect pour cette campagne.</p>
-      )}
+      {!loading && !error && prospects.length === 0 && <p>Aucun prospect.</p>}
 
       {!loading && !error && prospects.length > 0 && (
-        <>
-          <p>
-            {prospects.length} prospect
-            {prospects.length > 1 ? "s" : ""} à traiter.
-          </p>
-          <ul>
-            {prospects.map((p, idx) => (
-              <li key={p.id} style={{ marginBottom: 8 }}>
-                <strong>{p.name}</strong> — {p.phone}
-                {p.notes && <span> — {p.notes}</span>}
-                <button style={{ marginLeft: 12 }} onClick={() => startCall(idx)}>
-                  Appeler
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
+        <ul>
+          {prospects.map((p, idx) => (
+            <li key={p.id}>
+              <strong>{p.name}</strong> — {p.phone}
+              {p.notes && <span> — {p.notes}</span>}
+              <button style={{ marginLeft: 8 }} onClick={() => startCall(idx)}>
+                Appeler
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {mode === "call" && elementTxt && (
+        <ModalCall
+          mode={mode}
+          elementsTxt={elementTxt}
+          onClose={closeModal}
+          onActionClick={callResult}
+          onSelectReason={setSelectedRefusalReasonId}
+        />
       )}
     </div>
   );
