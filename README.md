@@ -1,3 +1,4 @@
+[![CI](https://github.com/killiandevapp/callprospect/actions/workflows/ci.yml/badge.svg)](https://github.com/killiandevapp/callprospect/actions/workflows/ci.yml)
 # CallProspect
 
 CallProspect est une petite application de prospection téléphonique permettant de gérer des campagnes, des prospects, et d’enregistrer les résultats des appels.
@@ -15,6 +16,8 @@ L’objectif est de remplacer l’usage de feuilles, de tableurs ou de notes per
 - Gestion des motifs de refus (propres à chaque campagne)
 - Historique des appels
 - Statistiques simples par campagne
+- Test CI
+- Security
 
 ---
 
@@ -36,6 +39,7 @@ Backend :
 Base de données :
 - users
 - refresh_tokens
+- login_attempts
 - campaigns
 - refusal_reasons
 - prospects
