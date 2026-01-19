@@ -132,3 +132,18 @@ CREATE TABLE IF NOT EXISTS imports (
   FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS meetings (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  call_log_id BIGINT UNSIGNED NOT NULL,
+  meeting_at DATETIME NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'planned',
+  location VARCHAR(190) NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  INDEX idx_meeting_call_log (call_log_id),
+  INDEX idx_meeting_at (meeting_at),
+
+  FOREIGN KEY (call_log_id) REFERENCES call_logs(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
