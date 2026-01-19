@@ -1,15 +1,16 @@
 import React from "react";
 import { formatSecondsToMMSS } from "../utils/utils";
 
+// Types métier pour les résultats d’appel (doivent rester syncro avec le back)
 type CallResult = "meeting" | "refused" | "no_answer" | "callback";
 
+// Motif de refus récupéré depuis l’API de campagne
 type RefusalReason = {
     id: number;
     label: string;
 };
 
-
-
+// Texte / data affichés dans la modale
 type ElementsTxt = {
     title: string;
     name?: string;
@@ -18,20 +19,19 @@ type ElementsTxt = {
     seconds?: number;
     running?: boolean;
     actions?: { label: string; result: CallResult }[];
-    reasons?: RefusalReason[]; // (si ce n’est pas encore là, ajoute-le)
+    reasons?: RefusalReason[]; // Liste des motifs de refus possibles
 };
 
-
-
+// Props de la modale d’appel
 type ModalProps = {
     mode: "list" | "call";
     elementsTxt: ElementsTxt;
     onClose: () => void;
     onActionClick?: (result: CallResult) => void;
-    onSelectReason?: (id: number) => void;   // 🔹 nouveau
+    onSelectReason?: (id: number) => void; // callback vers le parent quand on choisi un motif
 };
 
-
+// Modale générique pour gérer un appel (infos + boutons + motifs de refus)
 export default function ModalCall({
     mode,
     elementsTxt,
@@ -63,6 +63,7 @@ export default function ModalCall({
                     boxShadow: "0 12px 40px rgba(15,23,42,0.25)",
                 }}
             >
+                {/* Header de la modale : titre + bouton de fermeture */}
                 <div
                     style={{
                         display: "flex",
@@ -74,16 +75,20 @@ export default function ModalCall({
                     <button onClick={onClose}>×</button>
                 </div>
 
+                {/* Contenu spécifique au mode "call" */}
                 {mode === "call" && (
                     <>
+                        {/* Infos basiques sur le prospect */}
                         {name && phone && (
                             <p>
                                 <strong>{name}</strong> — {phone}
                             </p>
                         )}
 
+                        {/* Notes éventuelles liées au prospect */}
                         {notes && <p>Notes : {notes}</p>}
 
+                        {/* Timer d’appel formaté mm:ss */}
                         {typeof seconds === "number" && (
                             <p style={{ marginTop: 12 }}>
                                 Temps : {formatSecondsToMMSS(seconds)}{" "}
@@ -91,6 +96,7 @@ export default function ModalCall({
                             </p>
                         )}
 
+                        {/* Boutons d’actions (RDV, refus, etc.) */}
                         {actions && (
                             <div style={{ marginTop: 16 }}>
                                 {actions.map((action, index) => (
@@ -107,6 +113,7 @@ export default function ModalCall({
                     </>
                 )}
 
+                {/* Bloc pour choisir un motif de refus quand l’API en renvoie */}
                 {elementsTxt.reasons && elementsTxt.reasons.length > 0 && (
                     <div style={{ marginTop: 20 }}>
                         <p style={{ marginBottom: 8 }}>Motif du refus :</p>
@@ -116,11 +123,11 @@ export default function ModalCall({
                                     key={r.id}
                                     type="button"
                                     onClick={() => {
+                                        // On remonte seulement l’ID, la logique sera géré au parent
                                         if (onSelectReason) {
-                                            onSelectReason(r.id);          // 🔹 on remonte l’ID au parent
+                                            onSelectReason(r.id);
                                         }
                                     }}
-
                                     style={{
                                         padding: "6px 10px",
                                         borderRadius: 999,
@@ -136,7 +143,6 @@ export default function ModalCall({
                         </div>
                     </div>
                 )}
-
             </div>
         </div>
     );

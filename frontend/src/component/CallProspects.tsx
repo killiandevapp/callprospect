@@ -1,7 +1,8 @@
 // src/component/CallProspects.tsx
 import { useEffect, useState } from "react";
 import { api } from "../api/axios";
-import ModalCall from "./modalCall";
+import ModalCall from "./ModalCall";
+import ModalRdv from "./ModalRdv";
 import { useCallTimer } from "../hooks/useCallTimer";
 
 type Prospect = {
@@ -19,11 +20,12 @@ type RefusalReason = {
 };
 
 const CALL_ACTIONS: { label: string; result: CallResult }[] = [
-  { label: "RDV ✅", result: "meeting" },
-  { label: "Refus ❌", result: "refused" },
+  { label: "RDV", result: "meeting" },
+  { label: "Refus", result: "refused" },
   { label: "Décroche pas", result: "no_answer" },
   { label: "À relancer", result: "callback" },
 ];
+
 type Mode = "list" | "call";
 
 type CallToSave = {
@@ -36,20 +38,22 @@ export default function CallProspects() {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
-
-
   const [mode, setMode] = useState<Mode>("list");
 
   const { seconds, running, start, stop, reset } = useCallTimer();
   const [callStartedAt, setCallStartedAt] = useState<number | null>(null);
 
-
-  const [pendingCall, setPendingCall] = useState<CallToSave | null>(null);
-
   const [refusalReasons, setRefusalReasons] = useState<RefusalReason[]>([]);
-  const [selectedRefusalReasonId, setSelectedRefusalReasonId] = useState<number | null>(null);
+  const [selectedRefusalReasonId, setSelectedRefusalReasonId] =
+    useState<number | null>(null);
 
+  // appels en cours de traitement
+  const [refusalCall, setRefusalCall] = useState<CallToSave | null>(null);
+  const [meetingCall, setMeetingCall] = useState<CallToSave | null>(null);
+
+  const [showRdvModal, setShowRdvModal] = useState(false);
 
   const currentProspect =
     currentIndex !== null &&
@@ -58,7 +62,23 @@ export default function CallProspects() {
       ? prospects[currentIndex]
       : null;
 
-  // Load prospects
+  const rdvProspect =
+    meetingCall != null
+      ? prospects.find((p) => p.id === meetingCall.prospectId) || null
+      : null;
+
+  const resetCallState = () => {
+    setMode("list");
+    reset();
+    setCurrentIndex(null);
+    setCallStartedAt(null);
+    setRefusalReasons([]);
+    setSelectedRefusalReasonId(null);
+    setRefusalCall(null);
+    setMeetingCall(null);
+    setShowRdvModal(false);
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -73,86 +93,80 @@ export default function CallProspects() {
     })();
   }, []);
 
-
-
-
+  // enregistrement d’un refus une fois le motif choisi
   useEffect(() => {
-    // Pas d’appel en attente → rien à faire
-    if (!pendingCall) return;
-
-    // On gere ici uniquement le cas refus
-    if (pendingCall.result !== "refused") return;
-
-    // Si aucun motif encore choisi → on attend
+    if (!refusalCall) return;
     if (!selectedRefusalReasonId) return;
-
-    console.log("➡ Envoi en BDD de l’appel refusé", {
-      pendingCall,
-      selectedRefusalReasonId,
-    });
 
     (async () => {
       try {
         await api.post("/calls", {
-          ...pendingCall,
-          refusalReasonId: selectedRefusalReasonId, 
+          ...refusalCall,
+          refusalReasonId: selectedRefusalReasonId,
         });
 
-        // Mise à jour de la liste (comme dans callResult)
         setProspects((prev) => {
           const copy = [...prev];
-          const index = prev.findIndex((p) => p.id === pendingCall.prospectId);
-          if (index === -1) return copy;
-
-          const [removed] = copy.splice(index, 1);
-
-          if (pendingCall.result === "no_answer") {
-            const mid = Math.floor(copy.length / 2);
-            copy.splice(mid, 0, removed);
+          const index = copy.findIndex(
+            (p) => p.id === refusalCall.prospectId
+          );
+          if (index !== -1) {
+            copy.splice(index, 1);
           }
-
           return copy;
         });
       } catch (err) {
-        console.error("Erreur lors de l’enregistrement de l’appel refusé :", err);
+        console.error("Erreur enregistrement refus :", err);
       } finally {
-        // reset global UI
-        setMode("list");
-        reset();
-        setCurrentIndex(null);
-        setCallStartedAt(null);
-        setRefusalReasons([]);
-        setSelectedRefusalReasonId(null);
-        setPendingCall(null);
+        resetCallState();
       }
     })();
-  }, [pendingCall, selectedRefusalReasonId]);
-
+  }, [refusalCall, selectedRefusalReasonId]);
 
   const startCall = (index: number) => {
     if (index < 0 || index >= prospects.length) return;
-
     const p = prospects[index];
+
     setCurrentIndex(index);
-    start(); 
+    start();
     setCallStartedAt(Date.now());
     setMode("call");
+
     window.location.href = `tel:${p.phone}`;
   };
 
   const closeModal = () => {
-    setMode("list");
     stop();
-    reset();
-    setCurrentIndex(null);
-    setCallStartedAt(null);
-    setRefusalReasons([]);
+    resetCallState();
   };
 
-  const callResult = (result: CallResult) => {
+  const sendSimpleCall = async (payload: CallToSave) => {
+    try {
+      await api.post("/calls", payload);
+    } catch (err) {
+      console.error("Erreur enregistrement appel :", err);
+    }
+  };
+
+  const updateListAfterResult = (result: CallResult, index: number) => {
+    setProspects((prev) => {
+      const copy = [...prev];
+      const [removed] = copy.splice(index, 1);
+
+      if (result === "no_answer") {
+        const mid = Math.floor(copy.length / 2);
+        copy.splice(mid, 0, removed);
+      }
+
+      return copy;
+    });
+  };
+
+  const callResult = async (result: CallResult) => {
     if (!currentProspect || currentIndex === null) return;
 
     stop();
+
     const durationSec =
       callStartedAt !== null
         ? Math.round((Date.now() - callStartedAt) / 1000)
@@ -164,54 +178,97 @@ export default function CallProspects() {
       durationSec,
     };
 
-
     if (result === "refused") {
-
-
-      (async () => {
-        try {
-          const res = await api.get("/campaign/refusal-reasons");
-          // res.data = { campaignId, reasons: [...] }
-          setRefusalReasons(res.data.reasons || []);
-          setPendingCall(payload);
-
-          console.log("Motifs de refus chargés :", res.data);
-        } catch (err) {
-          console.log("erreur motifs de refus :", err);
-        }
-      })();
-
-
+      try {
+        const res = await api.get("/campaign/refusal-reasons");
+        setRefusalReasons(res.data.reasons || []);
+        setRefusalCall(payload);
+      } catch (err) {
+        console.error("Erreur chargement motifs refus :", err);
+      }
       return;
     }
 
     if (result === "meeting") {
-      console.log("RDV -> plus tard: demander une date de rendez-vous", payload);
-    } else if (result === "no_answer") {
-      console.log(
-        "Décroche pas -> garder en BDD et remettre dans la file",
-        payload
-      );
-    } else if (result === "callback") {
-      console.log("A relancer -> marquer en BDD pour une relance", payload);
+      setMeetingCall(payload);
+      setMode("list");
+      setShowRdvModal(true);
+      return;
     }
 
-    // remove or requeue
-    setProspects((prev) => {
-      const copy = [...prev];
-      const [removed] = copy.splice(currentIndex, 1);
-      if (result === "no_answer") {
-        const mid = Math.floor(copy.length / 2);
-        copy.splice(mid, 0, removed);
-      }
-      return copy;
-    });
+    if (result === "no_answer") {
 
-    setMode("list");
-    reset();
-    setCurrentIndex(null);
-    setCallStartedAt(null);
-    setRefusalReasons([]);
+      try {
+        await api.post("/calls", payload);
+        setProspects((prev) => {
+          const copy = [...prev];
+          const [removed] = copy.splice(currentIndex, 1);
+          const mid = Math.floor(copy.length / 2);
+          copy.splice(mid, 0, removed);
+          return copy;
+        });
+      } catch (err) {
+        console.error("Erreur chargement motifs refus :", err);
+      }finally{
+        resetCallState();
+      }
+      return;
+
+
+    }
+
+    if (result === "callback") {
+      try {
+        await api.post("/calls", payload);
+      // ici tu enlèves ou pas le prospect de la liste, selon ce que tu veux
+      setProspects((prev) => {
+        const copy = [...prev];
+        copy.splice(currentIndex, 1);
+        return copy;
+      });
+      } catch (err) {
+        console.error("Erreur chargement motifs refus :", err);
+      }finally{
+        resetCallState();
+      }
+      return;
+
+    }
+  };
+
+  const saveRdv = async (meetingAt: string, note: string | null) => {
+    if (!meetingCall) return;
+
+    try {
+      await api.post("/calls", {
+        prospectId: meetingCall.prospectId,
+        result: "meeting",
+        durationSec: meetingCall.durationSec,
+        meetingAt,
+        meetingLocation: null,
+        meetingNotes: note,
+      });
+
+      setProspects((prev) => {
+        const copy = [...prev];
+        const index = copy.findIndex(
+          (p) => p.id === meetingCall.prospectId
+        );
+        if (index !== -1) {
+          copy.splice(index, 1);
+        }
+        return copy;
+      });
+    } catch (err) {
+      console.error("Erreur enregistrement RDV :", err);
+    } finally {
+      resetCallState();
+    }
+  };
+
+  const closeRdvModal = () => {
+    setShowRdvModal(false);
+    setMeetingCall(null);
   };
 
   const elementTxt =
@@ -258,6 +315,15 @@ export default function CallProspects() {
           onClose={closeModal}
           onActionClick={callResult}
           onSelectReason={setSelectedRefusalReasonId}
+        />
+      )}
+
+      {showRdvModal && meetingCall && (
+        <ModalRdv
+          open={showRdvModal}
+          onClose={closeRdvModal}
+          onSave={saveRdv}
+          prospect={rdvProspect}
         />
       )}
     </div>

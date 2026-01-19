@@ -1,3 +1,4 @@
+// AppHome.tsx
 import { useEffect, useState } from "react";
 import { api } from "../api/axios";
 import { useAuth } from "../auth/AuthContext";
@@ -20,11 +21,9 @@ export default function AppHome() {
     })();
   }, []);
 
-  // === logique ici ===
-  const showCreate = hasCampaign === false;
-  const showMain = hasCampaign === true;
+  const showCreate = hasCampaign === false; // user n’a jamais de campagne
+  const showMain = hasCampaign === true;    // au moins une campagne existe
 
-  // === UN seul return ===
   return (
     <div>
       {showCreate && <CreateCampaign />}

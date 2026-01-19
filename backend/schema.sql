@@ -72,8 +72,9 @@ CREATE TABLE IF NOT EXISTS prospects (
   email VARCHAR(190) NULL,
   notes TEXT NULL,
 
+  status VARCHAR(32) NOT NULL DEFAULT 'open',
 
-  last_call_result VARCHAR(32) NULL,     
+  last_call_result VARCHAR(32) NULL,
   last_call_at DATETIME NULL,
   last_call_duration_sec INT NULL,
 
@@ -82,6 +83,7 @@ CREATE TABLE IF NOT EXISTS prospects (
   INDEX idx_prospect_campaign (campaign_id),
   INDEX idx_prospect_phone (phone),
   INDEX idx_prospect_campaign_result (campaign_id, last_call_result),
+  INDEX idx_prospect_campaign_status (campaign_id, status, created_at),
 
   FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;

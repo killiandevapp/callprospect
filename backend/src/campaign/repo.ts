@@ -77,6 +77,7 @@ export async function saveCampaignSetup(params: {
   }
 }
 
+
 export async function insertManualProspects(params: {
   campaignId: number;
   prospects: { name: string; phone: string; notes?: string }[];
@@ -90,10 +91,11 @@ export async function insertManualProspects(params: {
     p.name,
     p.phone,
     p.notes || null,
+    "open", // par défaut, on les met en ouverts
   ]);
 
   await pool.query(
-    "INSERT INTO prospects (campaign_id, name, phone, notes) VALUES ?",
+    "INSERT INTO prospects (campaign_id, name, phone, notes, status) VALUES ?",
     [values]
   );
 }
