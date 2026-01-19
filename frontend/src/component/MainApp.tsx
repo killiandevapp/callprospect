@@ -1,3 +1,4 @@
+// MainApp.tsx
 import React, { useEffect, useState } from "react";
 import { api } from "../api/axios";
 import AddProspects from "./AddProspects";
@@ -10,11 +11,12 @@ type MainAppProps = {
 
 export default function MainApp({ user, logout }: MainAppProps) {
   const [hasProspects, setHasProspects] = useState<boolean | null>(null);
+  const [showAddProspects, setShowAddProspects] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get("/prospects"); // à adapter plus tard (par campagne)
+        const res = await api.get("/prospects");
         const list = res.data.prospects || [];
         setHasProspects(list.length > 0);
       } catch (err) {
@@ -34,9 +36,28 @@ export default function MainApp({ user, logout }: MainAppProps) {
 
       {loading && <p>Chargement...</p>}
 
-      {!loading && hasProspects === false && <AddProspects />}
-      {!loading && hasProspects === true && <CallProspects />}
+      {/* Il reste des prospects à appeler */}
+      {!loading && hasProspects === true && !showAddProspects && (
+        <CallProspects />
+      )}
 
+      {/* Aucun prospect + écran "liste terminée" */}
+      {!loading && hasProspects === false && !showAddProspects && (
+        <div style={{ marginTop: 24 }}>
+          <p>Vous avez terminé votre liste de prospects pour cette campagne 🎉</p>
+          <p>Tu peux ajouter de nouveaux prospects pour continuer à appeler.</p>
+          <button
+            type="button"
+            onClick={() => setShowAddProspects(true)}
+            style={{ marginTop: 8 }}
+          >
+            Ajouter des prospects
+          </button>
+        </div>
+      )}
+
+      {/* Formulaire pour ajouter des prospects à la campagne existante */}
+      {!loading && showAddProspects && <AddProspects />}
     </div>
   );
 }

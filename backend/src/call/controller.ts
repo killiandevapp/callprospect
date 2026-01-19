@@ -10,11 +10,20 @@ const ALLOWED_RESULTS: CallResult[] = [
 ];
 
 export async function logCall(req: Request, res: Response) {
-  const userId = Number(req.user.sub); // vient de requireAuth
+  const userId = Number(req.user.sub);
 
-  const { prospectId, result, durationSec, refusalReasonId } = req.body || {};
+  const {
+    prospectId,
+    result,
+    durationSec,
+    refusalReasonId,
 
-  // validations simples
+    // pour meeting / callback
+    meetingAt,
+    meetingLocation,
+    meetingNotes,
+  } = req.body || {};
+
   if (typeof prospectId !== "number" || prospectId <= 0) {
     return res.status(400).json({ message: "prospectId invalide" });
   }
@@ -36,6 +45,33 @@ export async function logCall(req: Request, res: Response) {
     }
   }
 
+  // meeting / callback : parsing optionnel de la date
+  let meetingDate: Date | null = null;
+  let meetingLocationClean: string | null = null;
+  let meetingNotesClean: string | null = null;
+
+  if (result === "meeting" || result === "callback") {
+    if (meetingAt && typeof meetingAt === "string") {
+      const d = new Date(meetingAt);
+      if (!Number.isNaN(d.getTime())) {
+        meetingDate = d;
+      }
+    }
+
+    if (result === "meeting" && !meetingDate) {
+      return res
+        .status(400)
+        .json({ message: "meetingAt obligatoire pour un RDV" });
+    }
+
+    if (typeof meetingLocation === "string" && meetingLocation.trim() !== "") {
+      meetingLocationClean = meetingLocation.trim();
+    }
+    if (typeof meetingNotes === "string" && meetingNotes.trim() !== "") {
+      meetingNotesClean = meetingNotes.trim();
+    }
+  }
+
   try {
     await insertCallLog({
       userId,
@@ -43,6 +79,9 @@ export async function logCall(req: Request, res: Response) {
       result,
       durationSec: duration,
       refusalReasonId: refusalId,
+      meetingAt: meetingDate,
+      meetingLocation: meetingLocationClean,
+      meetingNotes: meetingNotesClean,
     });
 
     return res.status(201).json({ ok: true });
