@@ -48,6 +48,9 @@ export async function login(req: Request, res: Response) {
   const p = schema.safeParse(req.body);
   if (!p.success) return res.status(400).json({ message: "Invalid payload" });
 
+  console.log(p);
+  
+
   const { email, password } = p.data;
   const ua = req.headers["user-agent"];
   const ip = req.ip;

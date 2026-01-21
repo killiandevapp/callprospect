@@ -1,7 +1,10 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import AppHome from "./pages/AppHome";
+import AppHome from "./pages/appHome";
+import HistoryHome from "./pages/HistoryHome";
+import StatsPage from "./component/StatsPage";
+
 import RequireAuth from "./router/RequireAuth";
 
 // Composant principal de l'application gérant la navigation entre les pages.
@@ -21,6 +24,23 @@ export default function App() {
         element={
           <RequireAuth>
             <AppHome />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/history"
+        element={
+          <RequireAuth>
+            <HistoryHome />
+          </RequireAuth>
+        }
+      />
+            <Route
+        path="/stats"
+        element={
+          <RequireAuth>
+            <StatsPage />
           </RequireAuth>
         }
       />
