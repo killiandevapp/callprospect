@@ -5,7 +5,7 @@ import { requireAuth, requireCsrf } from "./auth/middleware";
 import { verifyCampaign, createCampaign, setupCampaign, getRefusalReasons } from "./campaign/controller";
 import { listProspects, listProspectsHistory } from "./prospect/controller";
 import { logCall } from "./call/controller"; 
-import { getStatsOverview , getCallsStatsByDay } from "./stats/controller";
+import { getStatsOverview , getCallsStatsByDate } from "./stats/controller";
 
 
 
@@ -44,7 +44,9 @@ router.get(
 router.post("/calls", requireAuth, requireCsrf, logCall);
 
 router.get("/stats/overview", requireAuth, getStatsOverview);
-router.get("/calls-by-day", getCallsStatsByDay);
+
+router.get("/calls-by-date", requireAuth ,getCallsStatsByDate);
+
 // Routes PROTÉGÉES (nécessitent auth)
 router.get("/me", requireAuth, (req, res) => res.json({ user: req.user }));
 router.post("/secure-action", requireAuth, requireCsrf, (_req, res) => res.json({ ok: true }));

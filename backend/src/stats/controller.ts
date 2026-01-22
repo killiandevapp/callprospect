@@ -1,6 +1,7 @@
 // src/stats/controller.ts
 import type { Request, Response } from "express";
-import { getStatsOverviewRepo , callsStatsByDay } from "./repo";
+import { getStatsOverviewRepo , getRepoCallsStatsByDate } from "./repo";
+import { log } from "node:console";
 
 
 
@@ -47,7 +48,36 @@ export async function getStatsOverview(req: Request, res: Response) {
 
 
 
-export async function getCallsStatsByDay(req: Request, res: Response) {
-  const data = await callsStatsByDay();
-  res.json(data);
+
+
+export async function getCallsStatsByDate(req: Request, res: Response): Promise<void> {
+  try {
+     const userId = Number(req.user.sub);
+
+    const { from, to } = req.query as {
+      from?: string;
+      to?: string;
+    };
+        console.log(userId);
+    console.log('userId après Number():', userId, typeof userId);
+    console.log('isNaN(userId):', isNaN(userId));
+
+    
+
+    if (!from || !to) {
+      res.status(400).json({ error: "from et to sont requis" });
+      return;
+    }
+
+    const stats = await getRepoCallsStatsByDate(
+      userId,
+      from,
+      to
+    );
+
+    res.json(stats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur stats appels" });
+  }
 }

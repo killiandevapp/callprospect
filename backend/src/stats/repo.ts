@@ -146,7 +146,7 @@ export async function getStatsOverviewRepo(params: {
     callsPerHour = Math.round(totalCalls / hours);
   }
 
-  
+
 
   return {
     totalCalls,
@@ -162,17 +162,37 @@ export async function getStatsOverviewRepo(params: {
 
 
 
-export async function callsStatsByDay() {
-  const [rows] = await db.query(`
+
+
+export type CallsStatsByDate = {
+  date: string; // YYYY-MM-DD
+  total_calls: number;
+  discussions: number;
+  refusals: number;
+};
+
+export async function getRepoCallsStatsByDate(
+  userId: number,
+  from: string,
+  to: string
+): Promise<CallsStatsByDate[]> {
+
+  const [rows] = await pool.query<CallsStatsByDate[]>(
+    `
+
     SELECT
-      DATE(created_at) AS date,
-      COUNT(*) AS calls,
-      SUM(result = 'discussion') AS discussions,
+      DATE(started_at) AS date,
+      COUNT(*) AS total_calls,
+      SUM(result IN ('meeting', 'callback')) AS discussions,
       SUM(result = 'refused') AS refusals
     FROM call_logs
-    GROUP BY DATE(created_at)
-    ORDER BY DATE(created_at) ASC
-  `);
+    WHERE user_id = ?
+      AND started_at BETWEEN ? AND ?
+    GROUP BY DATE(started_at)
+    ORDER BY date ASC
+    `,
+    [userId, from, to]
+  );
 
   return rows;
 }
