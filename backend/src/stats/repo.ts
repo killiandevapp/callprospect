@@ -139,12 +139,20 @@ export async function getStatsOverviewRepo(params: {
   }));
 
   // 5) appels / heure (approx très simple pour l’instant)
-  let callsPerHour = 0;
-  if (from && to && totalCalls > 0) {
-    const msDiff = to.getTime() - from.getTime();
-    const hours = msDiff > 0 ? msDiff / (1000 * 60 * 60) : 1;
-    callsPerHour = Math.round(totalCalls / hours);
-  }
+let callsPerSecond = 0;
+let callsPerMinute = 0;
+let callsPerHour = 0;
+
+if (from && to && totalCalls > 0) {
+  const msDiff = to.getTime() - from.getTime();
+  const seconds = msDiff > 0 ? msDiff / 1000 : 1;
+  const minutes = seconds / 60;
+  const hours = minutes / 60;
+
+  callsPerSecond = +(totalCalls / seconds).toFixed(2);
+  callsPerMinute = +(totalCalls / minutes).toFixed(2);
+  callsPerHour   = +(totalCalls / hours).toFixed(2);
+}
 
 
 

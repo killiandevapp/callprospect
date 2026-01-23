@@ -1,0 +1,51 @@
+/* CallHistory.css */
+
+.callHistoryContainer {
+  margin-top: 24px;
+  font-family: 'Inter', 'Segoe UI', 'Helvetica', sans-serif;
+  color: #222;
+}
+
+.callHistoryList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.callHistoryItem {
+  background-color: #fff;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.callHistoryItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.callHistoryHeader {
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+.callHistoryName {
+  color: #007bff;
+}
+
+.callHistoryPhone {
+  color: #555;
+}
+
+.callHistoryDetails {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.callHistoryLabel {
+  font-weight: 600;
+  color: #333;
+}

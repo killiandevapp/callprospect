@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { api } from "../api/axios";
 import AddProspects from "./AddProspects";
 import CallProspects from "./CallProspects";
+import '../style/mainApp.css'
 
 type MainAppProps = {
   user?: { email?: string };
@@ -30,10 +31,6 @@ export default function MainApp({ user, logout }: MainAppProps) {
 
   return (
     <div style={{ padding: 24 }}>
-      <p>Hello Main</p>
-      {user && <p>User: {user.email}</p>}
-      {logout && <button onClick={logout}>Déconnexion</button>}
-
       {loading && <p>Chargement...</p>}
 
       {/* Il reste des prospects à appeler */}
@@ -43,17 +40,24 @@ export default function MainApp({ user, logout }: MainAppProps) {
 
       {/* Aucun prospect + écran "liste terminée" */}
       {!loading && hasProspects === false && !showAddProspects && (
-        <div style={{ marginTop: 24 }}>
-          <p>Vous avez terminé votre liste de prospects pour cette campagne 🎉</p>
-          <p>Tu peux ajouter de nouveaux prospects pour continuer à appeler.</p>
+        <div className="sctEndProspects">
+          <p className="sctEndProspects__title">
+            Vous avez terminé votre liste de prospects pour cette campagne 🎉
+          </p>
+
+          <p className="sctEndProspects__text">
+            Tu peux ajouter de nouveaux prospects pour continuer à appeler.
+          </p>
+
           <button
             type="button"
+            className="sctEndProspects__btn"
             onClick={() => setShowAddProspects(true)}
-            style={{ marginTop: 8 }}
           >
             Ajouter des prospects
           </button>
         </div>
+
       )}
 
       {/* Formulaire pour ajouter des prospects à la campagne existante */}

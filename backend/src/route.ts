@@ -3,9 +3,11 @@ import rateLimit from "express-rate-limit";
 import { register, login, refresh, logout } from "./auth/controller";
 import { requireAuth, requireCsrf } from "./auth/middleware";
 import { verifyCampaign, createCampaign, setupCampaign, getRefusalReasons } from "./campaign/controller";
-import { listProspects, listProspectsHistory } from "./prospect/controller";
+import { listProspects } from "./prospect/controller";
+import {listProspectsHistory} from "./call/controller"
 import { logCall } from "./call/controller"; 
 import { getStatsOverview , getCallsStatsByDate } from "./stats/controller";
+import {getMeetings} from "./meeting/controller";
 
 
 
@@ -46,6 +48,7 @@ router.post("/calls", requireAuth, requireCsrf, logCall);
 router.get("/stats/overview", requireAuth, getStatsOverview);
 
 router.get("/calls-by-date", requireAuth ,getCallsStatsByDate);
+router.get("/meeting", requireAuth, getMeetings )
 
 // Routes PROTÉGÉES (nécessitent auth)
 router.get("/me", requireAuth, (req, res) => res.json({ user: req.user }));

@@ -1,6 +1,11 @@
 // src/call/controller.ts
 import type { Request, Response } from "express";
 import { insertCallLog, type CallResult } from "./repo";
+import  {findCallHistoryByUser}  from "./repo";
+
+
+
+
 
 const ALLOWED_RESULTS: CallResult[] = [
   "meeting",
@@ -94,4 +99,14 @@ export async function logCall(req: Request, res: Response) {
 
     return res.status(500).json({ message: "Erreur serveur" });
   }
+}
+
+
+export async function listProspectsHistory(req: Request, res: Response) {
+  const userId = Number(req.user.sub); // vient de requireAuth
+
+  const prospects = await findCallHistoryByUser(userId);
+
+  // Le front attend { prospects: [...] }
+  return res.json({ prospects });
 }
