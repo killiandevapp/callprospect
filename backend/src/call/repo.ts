@@ -87,7 +87,7 @@ export async function insertCallLog(params: InsertCallLogParams): Promise<void> 
 
     // on décide du status en fonction du résultat
     const newStatus =
-      result === "meeting" || result === "refused"   ? "closed" : "open";
+      result === "meeting" || result === "refused" ? "closed" : "open";
 
     await conn.query(
       `
