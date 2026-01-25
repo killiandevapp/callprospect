@@ -87,7 +87,7 @@ export async function insertCallLog(params: InsertCallLogParams): Promise<void> 
 
     // on décide du status en fonction du résultat
     const newStatus =
-      result === "meeting" || result === "refused" ||  result === "callback"  ? "closed" : "open";
+      result === "meeting" || result === "refused" ? "closed" : "open";
 
     await conn.query(
       `
@@ -110,3 +110,36 @@ export async function insertCallLog(params: InsertCallLogParams): Promise<void> 
     conn.release();
   }
 }
+
+// src/call/repo.ts
+export type CallHistoryRow = {
+  id: number;
+  prospect_name: string | null;
+  phone: string;
+  started_at: Date;
+  duration_sec: number | null;
+  result: string;
+};
+
+export async function findCallHistoryByUser(userId: number) {
+  const [rows] = await pool.query<any[]>(
+    `
+    SELECT
+      cl.id,
+      p.name AS prospect_name,
+      p.phone,
+      cl.started_at,
+      cl.duration_sec,
+      cl.result
+    FROM call_logs cl
+    JOIN prospects p ON p.id = cl.prospect_id
+    WHERE cl.user_id = ?
+    ORDER BY cl.started_at DESC
+    LIMIT 500
+    `,
+    [userId]
+  );
+
+  return rows as CallHistoryRow[];
+}
+

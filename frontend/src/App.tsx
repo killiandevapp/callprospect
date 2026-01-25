@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import AppHome from "./pages/appHome";
 import HistoryHome from "./pages/HistoryHome";
 import StatsPage from "./component/StatsPage";
+import Header from "./component/header";
+import MeetingPage from "./pages/MeetingPage";
 
 import RequireAuth from "./router/RequireAuth";
 
@@ -23,6 +25,7 @@ export default function App() {
         path="/app"
         element={
           <RequireAuth>
+            <Header />
             <AppHome />
           </RequireAuth>
         }
@@ -32,15 +35,26 @@ export default function App() {
         path="/history"
         element={
           <RequireAuth>
+            <Header />
             <HistoryHome />
           </RequireAuth>
         }
       />
-            <Route
+      <Route
         path="/stats"
         element={
           <RequireAuth>
+            <Header />
             <StatsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/meeting"
+        element={
+          <RequireAuth>
+            <Header />
+            <MeetingPage />
           </RequireAuth>
         }
       />

@@ -4,6 +4,7 @@ import { api } from "../api/axios";
 import ModalCall from "./ModalCall";
 import ModalRdv from "./ModalRdv";
 import { useCallTimer } from "../hooks/useCallTimer";
+import "../style/prospectsList.css"
 
 type Prospect = {
   id: number;
@@ -209,7 +210,7 @@ export default function CallProspects() {
         });
       } catch (err) {
         console.error("Erreur chargement motifs refus :", err);
-      }finally{
+      } finally {
         resetCallState();
       }
       return;
@@ -220,15 +221,15 @@ export default function CallProspects() {
     if (result === "callback") {
       try {
         await api.post("/calls", payload);
-      // ici tu enlèves ou pas le prospect de la liste, selon ce que tu veux
-      setProspects((prev) => {
-        const copy = [...prev];
-        copy.splice(currentIndex, 1);
-        return copy;
-      });
+        // ici tu enlèves ou pas le prospect de la liste, selon ce que tu veux
+        setProspects((prev) => {
+          const copy = [...prev];
+          copy.splice(currentIndex, 1);
+          return copy;
+        });
       } catch (err) {
         console.error("Erreur chargement motifs refus :", err);
-      }finally{
+      } finally {
         resetCallState();
       }
       return;
@@ -287,27 +288,39 @@ export default function CallProspects() {
 
   return (
     <div style={{ padding: 24 }}>
-      <h2>Prospects à appeler</h2>
+      <div className="prospectsContainer">
+        <div className="prospectCtnTitleList">
+          <h2>Prospects à appeler</h2>
+          <button>Ajouter prospects</button>
+        </div>
 
-      {loading && <p>Chargement...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {!loading && !error && prospects.length === 0 && <p>Aucun prospect.</p>}
+        {loading && <p className="prospectsStatus">Chargement...</p>}
+        {error && <p className="prospectsError">{error}</p>}
+        {!loading && !error && prospects.length === 0 && (
+          <p className="prospectsStatus">Aucun prospect.</p>
+        )}
 
-      {!loading && !error && prospects.length > 0 && (
-        <ul>
-          {prospects.map((p, idx) => (
-            <li key={p.id}>
-              <strong>{p.name}</strong> — {p.phone}
-              {p.notes && <span> — {p.notes}</span>}
-              <button style={{ marginLeft: 8 }} onClick={() => startCall(idx)}>
-                Appeler
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
+        {!loading && !error && prospects.length > 0 && (
+          <ul className="prospectsList">
+            {prospects.map((p, idx) => (
+              <li key={p.id} className="prospectItem">
+                <div className="prospectInfo">
+                  <span className="prospectName">{p.name}</span> —{" "}
+                  <span className="prospectPhone">{p.phone}</span>
+                  {p.notes && <span className="prospectNotes"> — {p.notes}</span>}
+                </div>
+                <button
+                  className="prospectCallButton"
+                  onClick={() => startCall(idx)}
+                >
+                  Appeler
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       {mode === "call" && elementTxt && (
         <ModalCall
           mode={mode}

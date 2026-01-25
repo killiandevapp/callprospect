@@ -1,5 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import { api } from "../api/axios";
+import '../style/addprospects.css'
 
 // Mode d’ajout des prospects : soit en important un fichier, soit à la main
 type Mode = "manual" | "file";
@@ -161,157 +162,153 @@ export default function AddProspects() {
         }
     };
 
-    return (
-        <div style={{ padding: 24 }}>
-            <h1>Vous revoilà !</h1>
-            <p>Configurez votre campagne avant de commencer à appeler.</p>
+return (
+  <div className="campaign-setup-container">
+    <h1 className="campaign-setup-title">Vous revoilà !</h1>
+    <p className="campaign-setup-subtitle">
+      Configurez votre campagne avant de commencer à appeler.
+    </p>
 
-            {/*Rappel des statuts d’appel utilisés */}
-            <section style={{ marginTop: 24 }}>
-                <h2>Définir le résultat d&apos;un appel</h2>
-                <p>Les statuts utilisés pendant la prospection :</p>
-                <ul>
-                    {callResults.map((r) => (
-                        <li key={r}>{r}</li>
-                    ))}
-                </ul>
-            </section>
+    {/* Rappel des statuts d’appel utilisés */}
+    <section className="campaign-section">
+      <h2 className="campaign-section-title">Définir le résultat d'un appel</h2>
+      <p className="campaign-section-text">
+        Les statuts utilisés pendant la prospection :
+      </p>
+      <ul className="campaign-list">
+        {callResults.map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ul>
+    </section>
 
-            {/* Configuration des motifs de refus */}
-            <section style={{ marginTop: 24 }}>
-                <h2>Définir les motifs de refus</h2>
-                <p>
-                    Quand tu choisiras &quot;Refus&quot; pendant un appel, tu devras
-                    choisir un motif parmi cette liste.
-                </p>
+    {/* Configuration des motifs de refus */}
+    <section className="campaign-section">
+      <h2 className="campaign-section-title">Définir les motifs de refus</h2>
+      <p className="campaign-section-text">
+        Quand tu choisiras "Refus" pendant un appel, tu devras choisir un motif parmi cette liste.
+      </p>
 
-                <input
-                    placeholder="Ex : Client énervé"
-                    value={refusalInput}
-                    onChange={refusalChange}
-                />
-                <button onClick={addRefusal} style={{ marginLeft: 8 }}>
-                    Ajouter
-                </button>
+      <div className="campaign-input-group">
+        <input
+          className="campaign-input"
+          placeholder="Ex : Client énervé"
+          value={refusalInput}
+          onChange={refusalChange}
+        />
+        <button className="campaign-btn" onClick={addRefusal}>
+          Ajouter
+        </button>
+      </div>
 
-                <ul style={{ marginTop: 12 }}>
-                    {refusalReasons.map((r) => (
-                        <li key={r}>
-                            {r}{" "}
-                            <button type="button" onClick={() => removeRefusal(r)}>
-                                x
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </section>
+      <ul className="campaign-list campaign-list-small">
+        {refusalReasons.map((r) => (
+          <li key={r} className="campaign-list-item">
+            {r}{" "}
+            <button className="campaign-btn-small" type="button" onClick={() => removeRefusal(r)}>
+              x
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
 
-            {/* Source des prospects (ex : Maps, PagesJaunes, fichier interne…) */}
-            <section style={{ marginTop: 24 }}>
-                <h2>Source des prospects</h2>
-                <input
-                    placeholder="Ex : Client Maps, PagesJaunes..."
-                    value={source}
-                    onChange={sourceChange}
-                />
-            </section>
+    {/* Source des prospects */}
+    <section className="campaign-section">
+      <h2 className="campaign-section-title">Source des prospects</h2>
+      <input
+        className="campaign-input"
+        placeholder="Ex : Client Maps, PagesJaunes..."
+        value={source}
+        onChange={sourceChange}
+      />
+    </section>
 
-            {/*  Ajout des prospects : par fichier CSV ou manuellement */}
-            <section style={{ marginTop: 24 }}>
-                <h2>Ajout des prospects</h2>
+    {/* Ajout des prospects */}
+    <section className="campaign-section">
+      <h2 className="campaign-section-title">Ajout des prospects</h2>
 
-                <div>
-                    <label>
-                        <input
-                            type="radio"
-                            name="mode"
-                            checked={mode === "manual"}
-                            onChange={() => modeGetContact("manual")}
-                        />{" "}
-                        Manuellement
-                    </label>
+      <div className="campaign-radio-group">
+        <label>
+          <input
+            type="radio"
+            name="mode"
+            checked={mode === "manual"}
+            onChange={() => modeGetContact("manual")}
+          />{" "}
+          Manuellement
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="mode"
+            checked={mode === "file"}
+            onChange={() => modeGetContact("file")}
+          />{" "}
+          Télécharger fichier
+        </label>
+      </div>
 
-                    <label style={{ marginLeft: 12 }}>
-                        <input
-                            type="radio"
-                            name="mode"
-                            checked={mode === "file"}
-                            onChange={() => modeGetContact("file")}
-                        />{" "}
-                        Télécharger fichier
-                    </label>
-                </div>
-
-                {/* Mode fichier : on affiche l’input et un résumé du CSV */}
-                {mode === "file" && (
-                    <div style={{ marginTop: 12 }}>
-                        <input type="file" accept=".csv" onChange={fileChange} />
-                        {file && (
-                            <div style={{ marginTop: 8 }}>
-                                <p>
-                                    <b>{file.name}</b>
-                                </p>
-                                <p style={{ color: "#555" }}>
-                                    {csvCount !== null
-                                        ? `${csvCount} lignes détectées`
-                                        : "Lecture du fichier..."}
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Mode manuel : formulaires pour saisir les prospects un par un */}
-                {mode === "manual" && (
-                    <div style={{ marginTop: 12 }}>
-                        <div>
-                            <input
-                                placeholder="Nom / entreprise"
-                                value={manualName}
-                                onChange={(e) => setManualName(e.target.value)}
-                            />
-                        </div>
-                        <div style={{ marginTop: 8 }}>
-                            <input
-                                placeholder="Téléphone"
-                                value={manualPhone}
-                                onChange={(e) => setManualPhone(e.target.value)}
-                            />
-                        </div>
-                        <div style={{ marginTop: 8 }}>
-                            <input
-                                placeholder="Notes (optionnel)"
-                                value={manualNotes}
-                                onChange={(e) => setManualNotes(e.target.value)}
-                            />
-                        </div>
-                        <button style={{ marginTop: 8 }} onClick={manualAddFile}>
-                            Ajouter le prospect
-                        </button>
-
-                        {manualProspects.length > 0 && (
-                            <ul style={{ marginTop: 12 }}>
-                                {manualProspects.map((p) => (
-                                    <li key={p.id}>
-                                        {p.name} - {p.phone}
-                                        {p.notes && ` (${p.notes})`}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                )}
-            </section>
-
-            {/* Bouton suivant : envoi de la configuration au back */}
-            <div style={{ marginTop: 32 }}>
-                <button onClick={handleNext} disabled={loadingNext}>
-                    {loadingNext ? "Enregistrement..." : "Suivant"}
-                </button>
-                {errorNext && (
-                    <p style={{ color: "red", marginTop: 8 }}>{errorNext}</p>
-                )}
+      {mode === "file" && (
+        <div className="campaign-file-group">
+          <input type="file" accept=".csv" onChange={fileChange} />
+          {file && (
+            <div className="campaign-file-info">
+              <p><b>{file.name}</b></p>
+              <p className="campaign-file-subtext">
+                {csvCount !== null ? `${csvCount} lignes détectées` : "Lecture du fichier..."}
+              </p>
             </div>
+          )}
         </div>
-    );
+      )}
+
+      {mode === "manual" && (
+        <div className="campaign-manual-group">
+          <input
+            className="campaign-input"
+            placeholder="Nom / entreprise"
+            value={manualName}
+            onChange={(e) => setManualName(e.target.value)}
+          />
+          <input
+            className="campaign-input"
+            placeholder="Téléphone"
+            value={manualPhone}
+            onChange={(e) => setManualPhone(e.target.value)}
+          />
+          <input
+            className="campaign-input"
+            placeholder="Notes (optionnel)"
+            value={manualNotes}
+            onChange={(e) => setManualNotes(e.target.value)}
+          />
+          <button className="campaign-btn" onClick={manualAddFile}>
+            Ajouter le prospect
+          </button>
+
+          {manualProspects.length > 0 && (
+            <ul className="campaign-list campaign-list-small">
+              {manualProspects.map((p) => (
+                <li key={p.id} className="campaign-list-item">
+                  {p.name} - {p.phone}
+                  {p.notes && ` (${p.notes})`}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
+
+    {/* Bouton suivant */}
+    <div className="campaign-next-group">
+      <button className="campaign-btn campaign-btn-next" onClick={handleNext} disabled={loadingNext}>
+        {loadingNext ? "Enregistrement..." : "Suivant"}
+      </button>
+      {errorNext && <p className="campaign-error">{errorNext}</p>}
+    </div>
+  </div>
+);
+
 }

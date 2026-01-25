@@ -1,0 +1,83 @@
+/* ProspectsList.css */
+
+.prospectsContainer {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: 'Inter', sans-serif;
+}
+
+.prospectsStatus {
+  color: #555;
+  font-style: italic;
+}
+
+.prospectsError {
+  color: #e74c3c;
+}
+
+.prospectsList {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0 0;
+}
+
+.prospectItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+}
+
+.prospectItem:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.prospectInfo {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prospectName {
+  font-weight: 600;
+  color: #222;
+}
+
+.prospectPhone {
+  color: #555;
+}
+
+.prospectNotes {
+  color: #888;
+  font-style: italic;
+}
+
+.prospectCallButton, .prospectCtnTitleList button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.prospectCallButton:hover {
+  background-color: #2980b9;
+}
+.prospectCtnTitleList button{
+    color: rgb(255, 255, 255);
+    font-weight: 600;
+}
+.prospectCtnTitleList{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
