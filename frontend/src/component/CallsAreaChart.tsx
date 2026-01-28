@@ -115,13 +115,22 @@ export const LineChart01 = () => {
                         tick={{ fill: "#64748b", fontSize: 13, fontWeight: 600 }}
                     />
 
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip
+                        content={<CustomTooltip />}
+                        wrapperStyle={{backgroundColor:"white", padding: "15px", display:"flex", flexDirection: "column", alignItems: "center"
+                        }}
+                        cursor={{
+                            fill: "rgb(255, 255, 255)", // fond bleu très léger
+                        }}
+                    />
 
-                    <Legend height={50} wrapperStyle={{ paddingTop: "16px", paddingBottom: "8px" }} />
+
+                    <Legend height={50} wrapperStyle={{ paddingTop: "16px", paddingBottom: "8px"}} />
 
                     <Area
                         dataKey="A"
                         name="Appels A"
+                        color="red"
                         stroke="#2563eb"
                         strokeWidth={3}
                         fill="url(#gradient)"
