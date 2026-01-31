@@ -6,6 +6,7 @@ import HistoryHome from "./pages/HistoryHome";
 import StatsPage from "./component/StatsPage";
 import Header from "./component/header";
 import MeetingPage from "./pages/MeetingPage";
+import './index.css'
 
 import RequireAuth from "./router/RequireAuth";
 

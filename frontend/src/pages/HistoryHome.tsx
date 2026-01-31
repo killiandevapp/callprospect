@@ -84,7 +84,7 @@ export default function HistoryHome() {
 
   return (
     <div className="callHistoryContainer">
-      <h2>Historique des appels</h2>
+      <h2 className="text-4xl pt-6 pb-12">Historique des appels</h2>
 
       <input
         className="callHistorySearch"

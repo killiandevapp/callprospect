@@ -36,14 +36,17 @@ export default function StatsPage() {
 
 
     return (
-        <div style={{ padding: 150 }}>
+        <div style={{ padding: 100 }}>
             <h2>Analyse par créneau horaire</h2>
 
             {/* cartes du haut */}
-            <div style={{ display: "flex", gap: 48, marginTop: 24, flexWrap: "wrap" }}>
-                <Card title="Refus" value={`${data.refusedPct}%`} />
+            <div className="grid grid-cols-[55%_40%] gap-[5%]">
+                <div className="justify-between" style={{ display: "flex", marginTop: 24, flexWrap: "wrap" }}>
+                                   <Card title="Refus" value={`${data.refusedPct}%`} />
                 <Card title="Discussion" value={`${data.discussionPct}%`} />
-                <Card title="Appel" value={`${data.callsPerHour} /h`} />
+                <Card title="Appel" value={`${data.callsPerHour} /h`} /> 
+                </div>
+
        
 
                 <div
@@ -52,7 +55,7 @@ export default function StatsPage() {
                         borderRadius: 16,
                         background: "#BDD2FF",
                         boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
-                        minWidth: "32%",
+                        minWidth: "35%",
                         minHeight: 100,
                         display: "flex",
                         flexDirection: "column",
@@ -70,12 +73,11 @@ export default function StatsPage() {
 
             </div>
 
-            <div className="grid grid-cols-[55%_35%]" style={{ display: "grid", gap: "5%", marginTop: 32, flexWrap: "wrap", gridTemplateColumns: "55% 40%" }}>
+            <div className="grid grid-cols-[55%_40%]" style={{ display: "grid", gap: "5%", marginTop: 32, flexWrap: "wrap", gridTemplateColumns: "55% 40%" }}>
                 {/* appels / jour */}
                 <div className="bg-white shadow-[0_10px_30px_rgba(15,23,42,0.08)] p-12" style={{ flex: 1, minWidth: 320, boxShadow: "rgba(15, 23, 42, 0.08) 0px 10px 30px", padding: 20, borderRadius: 30 }}>
                     <h3>Nombre d’appels</h3>
                     <p style={{ fontSize: 32, fontWeight: 600 }}>{data.totalCalls}</p>
-                    <small>Cette semaine</small>
 
                     <LineChart01 />
                 </div>
@@ -91,7 +93,7 @@ export default function StatsPage() {
                         />
                     ))}
 
-                    <h3 style={{ marginTop: 24 }}>Statistiques sur les refus</h3>
+                    <h3 style={{ marginTop: 24 }}>Statistiques sur les motifs des refus</h3>
                     {data.refusalReasons.map((r) => (
                         <ProgressLine
                             key={r.label}

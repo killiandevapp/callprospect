@@ -40,107 +40,156 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
-export const LineChart01 = () => {
-    const [data, setData] = useState<any[]>([]);
+interface ChartData {
+    date: Date;
+    A: number;
+    B: number;
+    C: number;
+}
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const res = await api.get("/calls-by-date", {
-                    params: {
-                        from: "2026-01-17", // date de début de la semaine
-                        to: "2026-01-23"    // date de fin de la semaine
-                    }
+export const LineChart01 = () => {
+    const [data, setData] = useState<ChartData[]>([]);
+    const [fromDate, setFromDate] = useState("2026-01-17");
+    const [toDate, setToDate] = useState("2026-01-31");
+    const [loading, setLoading] = useState(false);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get("/calls-by-date", {
+                params: {
+                    from: fromDate,
+                    to: toDate
+                }
+            });
+
+            const filtered = res.data
+                .map((row: any) => ({
+                    ...row,
+                    date: new Date(row.date),
+                }))
+                .filter((row: any) => {
+                    // Optionnel : filtrer seulement les jours ouvrés (lundi-vendredi)
+                    const dayOfWeek = row.date.getDay();
+                    return dayOfWeek !== 0 && dayOfWeek !== 7; // pas WE
                 });
 
-                // Filtrer uniquement les jours ouvrés lun → ven
-                const today = new Date();
-                const dayOfWeek = today.getDay();
+            setData(
+                filtered.map((row: any) => ({
+                    date: row.date,
+                    A: row.total_calls,
+                    B: row.discussions,
+                    C: row.refusals
+                }))
+            );
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-                const filtered = res.data
-                    .map((row: any) => ({
-                        ...row,
-                        date: new Date(row.date), // <-- conversion ici
-                    }))
-                    .filter((row: any) => {
-                        const diff = row.date.getTime() - today.getTime();
-                        // ici tu peux filtrer selon ton besoin
-                        return true;
-                    });
+    useEffect(() => {
+        fetchData();
+    }, [fromDate, toDate]);
 
-                setData(
-                    filtered.map((row: any) => ({
-                        date: row.date,
-                        A: row.total_calls,
-                        B: row.discussions,
-                        C: row.refusals
-                    }))
-                );
-            } catch (err) {
-                console.error(err);
-            }
-        })();
-    }, []);
+    const presets = [
+        { label: "Cette semaine", from: "2026-01-20", to: "2026-01-26" },
+        { label: "Semaine dernière", from: "2026-01-13", to: "2026-01-19" },
+        { label: "Mois complet", from: "2026-01-01", to: "2026-02-01" }
+    ];
+
+    const setPreset = (preset: { from: string; to: string }) => {
+        setFromDate(preset.from);
+        setToDate(preset.to);
+    };
 
     return (
-        <div className="w-full h-[450px] p-8 bg-gradient-to-br from-white to-slate-50/50 rounded-3xl shadow-xl border border-slate-100/50">
-            <ResponsiveContainer width="100%" height={380}>
-                <AreaChart data={data}>
-                    <defs>
-                        <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#2563eb" stopOpacity={0.4} />
-                            <stop offset="50%" stopColor="#2563eb" stopOpacity={0.2} />
-                            <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-
-                    <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#f8fafc" />
-
-                    <XAxis
-                        dataKey="date"
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={12}
-                        tickFormatter={(value: any) =>
-                            value.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" })
-                        }
-                        tick={{ fill: "#64748b", fontSize: 13, fontWeight: 600 }}
-                    />
-
-                    <YAxis
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={12}
-                        tickFormatter={(value: number) => value.toLocaleString()}
-                        tick={{ fill: "#64748b", fontSize: 13, fontWeight: 600 }}
-                    />
-
-                    <Tooltip
-                        content={<CustomTooltip />}
-                        wrapperStyle={{backgroundColor:"white", padding: "15px", display:"flex", flexDirection: "column", alignItems: "center"
-                        }}
-                        cursor={{
-                            fill: "rgb(255, 255, 255)", // fond bleu très léger
-                        }}
-                    />
+        <div className="w-full space-y-6">
+            {/* 🎯 SELECTEUR DE DATES */}
+            <div className="">
 
 
-                    <Legend height={50} wrapperStyle={{ paddingTop: "16px", paddingBottom: "8px"}} />
+                {/* Presets rapides */}
+                <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-slate-100">
+                    {presets.map((preset, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setPreset(preset)}
+                            className="px-4 py-2 text-xs bg-slate-100 hover:bg-blue-500 hover:text-white rounded-lg transition-all font-medium"
+                        >
+                            {preset.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
 
-                    <Area
-                        dataKey="A"
-                        name="Appels A"
-                        color="red"
-                        stroke="#2563eb"
-                        strokeWidth={3}
-                        fill="url(#gradient)"
-                        fillOpacity={1}
-                        type="monotone"
-                    />
-                    <Area dataKey="B" name="Appels B" stroke="#60a5fa" strokeWidth={3} fill="none" type="monotone" />
-                    <Area dataKey="C" name="Appels C" stroke="#1d4ed8" strokeWidth={3} fill="none" type="monotone" />
-                </AreaChart>
-            </ResponsiveContainer>
+            {/* 📊 GRAPHIQUE */}
+            <div className="">
+                {loading ? (
+                    <div className="flex items-center justify-center h-[380px] text-slate-500">
+                        Chargement des données...
+                    </div>
+                ) : data.length === 0 ? (
+                    <div className="flex items-center justify-center h-[380px] text-slate-500">
+                        Aucune donnée pour cette période
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height={380}>
+                        <AreaChart data={data}>
+                            <defs>
+                                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.4} />
+                                    <stop offset="50%" stopColor="#2563eb" stopOpacity={0.2} />
+                                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+
+                            <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#f8fafc" />
+
+                            <XAxis
+                                dataKey="date"
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={12}
+                                tickFormatter={(value: any) =>
+                                    value.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" })
+                                }
+                                tick={{ fill: "#64748b", fontSize: 13, fontWeight: 600 }}
+                            />
+
+                            <YAxis
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={12}
+                                tickFormatter={(value: number) => value.toLocaleString()}
+                                tick={{ fill: "#64748b", fontSize: 13, fontWeight: 600 }}
+                            />
+
+                            <Tooltip
+                                content={<CustomTooltip />}
+                                cursor={{
+                                    fill: "rgb(255, 255, 255)",
+                                }}
+                            />
+
+                            <Legend height={50} wrapperStyle={{ paddingTop: "16px", paddingBottom: "8px" }} />
+
+                            <Area
+                                dataKey="A"
+                                name="Appels A"
+                                stroke="#2563eb"
+                                strokeWidth={3}
+                                fill="url(#gradient)"
+                                fillOpacity={1}
+                                type="monotone"
+                            />
+                            <Area dataKey="B" name="Appels B" stroke="#60a5fa" strokeWidth={3} fill="none" type="monotone" />
+                            <Area dataKey="C" name="Appels C" stroke="#1d4ed8" strokeWidth={3} fill="none" type="monotone" />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                )}
+            </div>
         </div>
     );
 };
