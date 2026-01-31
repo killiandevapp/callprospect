@@ -27,7 +27,6 @@ export async function findProspectsByUser(
     JOIN campaigns c ON p.campaign_id = c.id
     WHERE c.user_id = ?
       AND p.status = 'open'
-      AND p.status = 'closed'
     ORDER BY p.created_at DESC
     LIMIT 200
     `,
