@@ -36,36 +36,32 @@ export default function StatsPage() {
 
 
     return (
-        <div style={{ padding: 100 }}>
-            <h2>Analyse par créneau horaire</h2>
+        <div style={{ padding: 150 }}>
+            <h2 className="text-4xl mb-12">Analyse par créneau horaire</h2>
 
             {/* cartes du haut */}
             <div className="grid grid-cols-[55%_40%] gap-[5%]">
                 <div className="justify-between" style={{ display: "flex", marginTop: 24, flexWrap: "wrap" }}>
-                                   <Card title="Refus" value={`${data.refusedPct}%`} />
-                <Card title="Discussion" value={`${data.discussionPct}%`} />
-                <Card title="Appel" value={`${data.callsPerHour} /h`} /> 
+                    <Card title="Refus" value={`${data.refusedPct}%`} />
+                    <Card title="Discussion" value={`${data.discussionPct}%`} />
+                    <Card title="Appel" value={`${data.callsPerHour} /h`} />
                 </div>
 
-       
+
 
                 <div
-                    style={{
-                        padding: 16,
-                        borderRadius: 16,
-                        background: "#BDD2FF",
-                        boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
-                        minWidth: "35%",
-                        minHeight: 100,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 15,
-                        position:'relative',
-                    }}
-                >
-                    <div style={{ fontSize: 28, color: "#000000" }}>Évolution apelle</div>
-                    <div style={{ fontSize: 28, fontWeight: 600, color: "#16a34a", display:"flex", alignItems: "center", gap: 5 }}>+{diffCalls} appels <span style={{fontSize: 15}}> { diffPct}%</span></div>
-                    <img style={{ width: 60, position: 'absolute', right:50, bottom:20 }} src={imgStats} alt="" />
+                    className="p-4 rounded-xl bg-[#BDD2FF] shadow-[0_10px_30px_rgba(15,23,42,0.08)] min-w-[35%] min-h-[100px] flex flex-col gap-1 relative h-[100px] mt-[24px]">
+                    <div className="text-2xl text-black">Évolution apelle</div>
+                    <div className="text-xl font-semibold text-green-600 flex items-center gap-[5px]">
+                        +{diffCalls} appels
+                        <span className="text-sm">{diffPct}%</span>
+                    </div>
+                    <img
+                        className="w-[60px] absolute right-[50px] bottom-[20px]"
+                        src={imgStats}
+                        alt=""
+                    />
+
                 </div>
 
 

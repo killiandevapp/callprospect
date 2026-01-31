@@ -1,9 +1,12 @@
 # Backend – Authentification
 
-Ce backend fournit une API d’authentification utilisée par le frontend.
-Il gère la création de compte, la connexion, le maintien de session et la sécurité associée.
+Ce backend fournit une API REST utilisée par le frontend CallProspect.
+Il gère l’authentification, la sécurité et la logique métier liée à la prospection téléphonique.
 
-Le but est d’avoir une implémentation réaliste, sans sur-ingénierie.
+Le but est d’avoir une implémentation réaliste, lisible et maintenable,
+sans sur-ingénierie inutile.
+
+---
 
 ## Stack technique
 
@@ -11,43 +14,52 @@ Le but est d’avoir une implémentation réaliste, sans sur-ingénierie.
 - Express
 - TypeScript
 - MySQL
-- JWT
+- JWT (access / refresh)
 - bcrypt
 - zod
+- Jest
+
+---
 
 ## Fonctionnalités
 
 - Inscription utilisateur (email / mot de passe)
 - Connexion sécurisée
-- Access token JWT (durée courte)
+- Access token JWT à durée de vie courte
 - Refresh token stocké en cookie httpOnly
-- Refresh de session
-- Déconnexion
-- Protection brute-force (rate limit + verrouillage temporaire)
-- Protection CSRF pour les requêtes sensibles
+- Rafraîchissement automatique de session
+- Déconnexion avec révocation du refresh token
+- Protection contre le brute-force
+- Protection CSRF sur les routes sensibles
 - Journalisation des tentatives de connexion
+
+---
 
 ## Fonctionnement général
 
 1. Lors de la connexion, un access token est renvoyé au client.
-2. Un refresh token est stocké en cookie httpOnly côté serveur.
-3. Lorsque l’access token expire, le client demande un refresh.
-4. Le serveur valide le refresh token, puis renvoie un nouvel access token.
-5. En cas de déconnexion, le refresh token est révoqué.
+2. Un refresh token est stocké en cookie httpOnly.
+3. À l’expiration de l’access token, le client demande un refresh.
+4. Le serveur valide le refresh token et renvoie un nouvel access token.
+5. Lors de la déconnexion, le refresh token est invalidé.
+
+---
 
 ## Sécurité
 
 - Les mots de passe sont hashés avec bcrypt.
 - Les refresh tokens ne sont jamais stockés en clair en base.
-- Les cookies sensibles sont protégés (`httpOnly`, `sameSite`).
-- Les attaques par brute-force sont limitées.
+- Les cookies sensibles utilisent `httpOnly` et `sameSite`.
+- Les tentatives de connexion abusives sont limitées.
+- Chaque requête vérifie la propriété des ressources (user ↔ données).
+
+---
 
 ## Configuration
 
 Un fichier `.env` est requis (non versionné) pour :
 - les secrets JWT
 - la configuration de la base de données
-- les options de cookies
+- les options liées aux cookies
 
 Sans ces variables, l’application ne démarre pas volontairement.
-

@@ -290,7 +290,7 @@ export default function CallProspects() {
     <div style={{ padding: 24 }}>
       <div className="prospectsContainer">
         <div className="prospectCtnTitleList">
-          <h2>Prospects à appeler</h2>
+          <h2 className="text-4xl mb-12">Prospects à appeler</h2>
           <button>Ajouter prospects</button>
         </div>
 
