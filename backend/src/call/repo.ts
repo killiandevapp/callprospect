@@ -8,7 +8,7 @@ type InsertCallLogParams = {
   result: CallResult;
   durationSec: number | null;
   refusalReasonId?: number | null;
-  
+
   // NOUVEAU pour RDV
   meetingAt?: Date | null;
   meetingLocation?: string | null;
@@ -87,7 +87,12 @@ export async function insertCallLog(params: InsertCallLogParams): Promise<void> 
 
     // on décide du status en fonction du résultat
     const newStatus =
-      result === "meeting" || result === "refused" ? "closed" : "open";
+      result === "meeting" ||
+        result === "refused" ||
+        result === "callback"
+        ? "closed"
+        : "open";
+
 
     await conn.query(
       `
