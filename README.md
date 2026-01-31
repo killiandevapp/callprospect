@@ -1,42 +1,62 @@
 [![CI](https://github.com/killiandevapp/callprospect/actions/workflows/ci.yml/badge.svg)](https://github.com/killiandevapp/callprospect/actions/workflows/ci.yml)
+
+
+
 # CallProspect
 
-CallProspect est une petite application de prospection téléphonique permettant de gérer des campagnes, des prospects, et d’enregistrer les résultats des appels.
+CallProspect est une application de prospection téléphonique conçue pour remplacer
+les fichiers Excel, notes papier et outils bricolés par une solution simple,
+structurée et orientée usage réel.
 
-L’objectif est de remplacer l’usage de feuilles, de tableurs ou de notes personnelles par un outil simple et structuré.
+L’application permet de gérer des campagnes, des prospects, d’enregistrer les appels
+et d’exploiter un historique clair avec des statistiques basiques.
+
+Projet volontairement pragmatique : pas de sur-ingénierie, mais une architecture propre
+et sécurisée, proche de la réalité terrain.
 
 ---
 
-## Fonctionnalités principales
+## Fonctionnalités
 
-- Authentification (email + mot de passe)
-- Gestion des campagnes de prospection
-- Ajout de prospects (manuel, CSV à venir)
-- Enregistrement des résultats d’appel
-- Gestion des motifs de refus (propres à chaque campagne)
+- Authentification sécurisée (email / mot de passe)
+- Gestion de campagnes de prospection
+- Gestion des prospects
+- Enregistrement des appels (résultat, durée, RDV, refus)
+- Motifs de refus personnalisés par campagne
 - Historique des appels
 - Statistiques simples par campagne
-- Test CI
-- Security
+- Sécurité (JWT, cookies httpOnly, CSRF)
+- Tests & CI
 
 ---
 
-## Aperçu technique
+## Architecture
 
-Frontend :
-- React + TypeScript
-- Routage + pages protégées
-- State simple
+/callprospect
+├── backend/ API Node.js + Express
+├── frontend/ Application React
+└── README.md (ce fichier)
 
-Backend :
-- Node.js + Express
-- API REST
+
+## Stack technique
+
+### Frontend
+- React
+- TypeScript
+- Vite
+- React Router
+- Axios
+
+### Backend
+- Node.js
+- Express
+- TypeScript
 - MySQL
 - JWT (access + refresh)
-- Cookies HttpOnly
-- Vérifications de sécurité classiques
+- bcrypt
+- zod
 
-Base de données :
+### Base de données (principales tables)
 - users
 - refresh_tokens
 - login_attempts
@@ -44,5 +64,14 @@ Base de données :
 - refusal_reasons
 - prospects
 - call_logs
+- meetings
 
+---
 
+## Philosophie du projet
+
+- Sécurité gérée côté backend
+- Tokens sensibles jamais stockés en localStorage
+- Logique métier simple et explicite
+- Code lisible avant d’être abstrait
+- Pensé pour évoluer (CSV, stats avancées, etc.)
