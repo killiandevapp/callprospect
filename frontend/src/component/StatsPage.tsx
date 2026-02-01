@@ -36,112 +36,113 @@ export default function StatsPage() {
 
 
     return (
-        <div style={{ padding: 150 }}>
-            <h2 className="text-4xl mb-12">Analyse par créneau horaire</h2>
+        <div className="px-4 sm:px-8 lg:px-16 py-8 space-y-12">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold">
+                Analyse par créneau horaire
+            </h2>
 
-            {/* cartes du haut */}
-            <div className="grid grid-cols-[55%_40%] gap-[5%]">
-                <div className="justify-between" style={{ display: "flex", marginTop: 24, flexWrap: "wrap" }}>
+            {/* 📊 Cartes du haut */}
+            <div className="grid grid-cols-1 lg:grid-cols-[55%_40%] gap-6 lg:gap-[5%]">
+                <div className="flex flex-wrap gap-4">
                     <Card title="Refus" value={`${data.refusedPct}%`} />
                     <Card title="Discussion" value={`${data.discussionPct}%`} />
-                    <Card title="Appel" value={`${data.callsPerHour} /h`} />
+                    <Card title="Appels / h" value={`${data.callsPerHour}`} />
                 </div>
 
-
-
-                <div
-                    className="p-4 rounded-xl bg-[#BDD2FF] shadow-[0_10px_30px_rgba(15,23,42,0.08)] min-w-[35%] min-h-[100px] flex flex-col gap-1 relative h-[100px] mt-[24px]">
-                    <div className="text-2xl text-black">Évolution apelle</div>
-                    <div className="text-xl font-semibold text-green-600 flex items-center gap-[5px]">
-                        +{diffCalls} appels
-                        <span className="text-sm">{diffPct}%</span>
+                <div className="relative p-5 rounded-xl bg-blue-100 shadow-lg h-[120px] flex flex-col justify-center">
+                    <div className="text-lg font-medium text-slate-900">
+                        Évolution des appels
                     </div>
+                    <div className="text-xl font-semibold text-green-600 flex items-center gap-2">
+                        +{diffCalls} appels
+                        <span className="text-sm text-green-700">{diffPct}%</span>
+                    </div>
+
                     <img
-                        className="w-[60px] absolute right-[50px] bottom-[20px]"
                         src={imgStats}
                         alt=""
+                        className="absolute right-6 bottom-4 w-14 opacity-90 hidden sm:block"
                     />
-
                 </div>
-
-
-
-
             </div>
 
-            <div className="grid grid-cols-[55%_40%]" style={{ display: "grid", gap: "5%", marginTop: 32, flexWrap: "wrap", gridTemplateColumns: "55% 40%" }}>
+            {/* 📈 Graphiques + stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-[55%_40%] gap-8 lg:gap-[5%]">
                 {/* appels / jour */}
-                <div className="bg-white shadow-[0_10px_30px_rgba(15,23,42,0.08)] p-12" style={{ flex: 1, minWidth: 320, boxShadow: "rgba(15, 23, 42, 0.08) 0px 10px 30px", padding: 20, borderRadius: 30 }}>
-                    <h3>Nombre d’appels</h3>
-                    <p style={{ fontSize: 32, fontWeight: 600 }}>{data.totalCalls}</p>
+                <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+                    <h3 className="text-lg font-medium text-slate-800">
+                        Nombre d’appels
+                    </h3>
+                    <p className="text-3xl font-semibold mt-1">
+                        {data.totalCalls}
+                    </p>
 
-                    <LineChart01 />
+                    <div className="mt-4">
+                        <LineChart01 />
+                    </div>
                 </div>
 
                 {/* créneaux + refus */}
-                <div style={{ flex: 1, minWidth: 320 }}>
-                    <h3>Analyse par créneau</h3>
-                    {data.timeSlots.map((slot) => (
-                        <ProgressLine
-                            key={slot.label}
-                            label={slot.label}
-                            percent={slot.percent}
-                        />
-                    ))}
+                <div className="space-y-6">
+                    <div>
+                        <h3 className="text-lg font-medium mb-3">
+                            Analyse par créneau
+                        </h3>
+                        {data.timeSlots.map((slot) => (
+                            <ProgressLine
+                                key={slot.label}
+                                label={slot.label}
+                                percent={slot.percent}
+                            />
+                        ))}
+                    </div>
 
-                    <h3 style={{ marginTop: 24 }}>Statistiques sur les motifs des refus</h3>
-                    {data.refusalReasons.map((r) => (
-                        <ProgressLine
-                            key={r.label}
-                            label={r.label}
-                            percent={r.percent}
-                        />
-                    ))}
+                    <div>
+                        <h3 className="text-lg font-medium mb-3">
+                            Motifs de refus
+                        </h3>
+                        {data.refusalReasons.map((r) => (
+                            <ProgressLine
+                                key={r.label}
+                                label={r.label}
+                                percent={r.percent}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
+
 function Card({ title, value }: { title: string; value: string }) {
     return (
-        <div
-            style={{
-                padding: 16,
-                borderRadius: 16,
-                background: "#fff",
-                boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
-                minWidth: 160,
-                minHeight: 100,
-            }}
-        >
-            <div style={{ fontSize: 13, color: "#6b7280" }}>{title.toUpperCase()}</div>
-            <div style={{ fontSize: 28, fontWeight: 600, color: "#16a34a" }}>{value}</div>
+        <div className="bg-white rounded-xl shadow-lg p-4 min-w-[140px] flex-1 sm:flex-none">
+            <div className="text-xs font-medium text-slate-500 uppercase">
+                {title}
+            </div>
+            <div className="text-2xl font-semibold text-green-600 mt-1">
+                {value}
+            </div>
         </div>
     );
 }
 
+
+
 function ProgressLine({ label, percent }: { label: string; percent: number }) {
     return (
-        <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 13, marginBottom: 4 }}>
-                {percent}% <span style={{ color: "#6b7280" }}> {label}</span>
+        <div className="space-y-1">
+            <div className="text-sm">
+                <span className="font-medium">{percent}%</span>{" "}
+                <span className="text-slate-500">{label}</span>
             </div>
-            <div
-                style={{
-                    height: 6,
-                    borderRadius: 999,
-                    background: "#e5e7eb",
-                    overflow: "hidden",
-                }}
-            >
+
+            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                 <div
-                    style={{
-                        width: `${percent}%`,
-                        height: "100%",
-                        borderRadius: 999,
-                        background: "#4f46e5",
-                    }}
+                    className="h-full bg-indigo-600 rounded-full transition-all"
+                    style={{ width: `${percent}%` }}
                 />
             </div>
         </div>
