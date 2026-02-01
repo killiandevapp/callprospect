@@ -105,92 +105,116 @@ export const LineChart01 = () => {
     };
 
     return (
-        <div className="w-full space-y-6">
-            {/* 🎯 SELECTEUR DE DATES */}
-            <div className="">
+         <div className="w-full space-y-6">
+  {/* 🎯 SELECTEUR DE DATES */}
+  <div className="w-full">
+    {/* Presets rapides */}
+    <div
+      className="
+        flex flex-wrap gap-2
+        mt-4 pt-4
+        border-t border-slate-100
+        sm:mt-6 sm:pt-6
+      "
+    >
+      {presets.map((preset, index) => (
+        <button
+          key={index}
+          onClick={() => setPreset(preset)}
+          className="
+            px-3 py-2 text-xs
+            sm:px-4 sm:text-sm
+            bg-slate-100 hover:bg-blue-500 hover:text-white
+            rounded-lg transition-all font-medium
+            w-full sm:w-auto
+          "
+        >
+          {preset.label}
+        </button>
+      ))}
+    </div>
+  </div>
 
+  {/* 📊 GRAPHIQUE */}
+  <div
+    className="
+      w-full
+      bg-white
+      rounded-xl
+      p-3 sm:p-4 lg:p-6
+      border border-slate-100
+    "
+  >
+    {loading ? (
+      <div className="flex items-center justify-center h-[260px] sm:h-[380px] text-slate-500 text-sm">
+        Chargement des données...
+      </div>
+    ) : data.length === 0 ? (
+      <div className="flex items-center justify-center h-[260px] sm:h-[380px] text-slate-500 text-sm">
+        Aucune donnée pour cette période
+      </div>
+    ) : (
+      <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 260 : 380}>
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2563eb" stopOpacity={0.4} />
+              <stop offset="50%" stopColor="#2563eb" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
+            </linearGradient>
+          </defs>
 
-                {/* Presets rapides */}
-                <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-slate-100">
-                    {presets.map((preset, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setPreset(preset)}
-                            className="px-4 py-2 text-xs bg-slate-100 hover:bg-blue-500 hover:text-white rounded-lg transition-all font-medium"
-                        >
-                            {preset.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
+          <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#f8fafc" />
 
-            {/* 📊 GRAPHIQUE */}
-            <div className="">
-                {loading ? (
-                    <div className="flex items-center justify-center h-[380px] text-slate-500">
-                        Chargement des données...
-                    </div>
-                ) : data.length === 0 ? (
-                    <div className="flex items-center justify-center h-[380px] text-slate-500">
-                        Aucune donnée pour cette période
-                    </div>
-                ) : (
-                    <ResponsiveContainer width="100%" height={380}>
-                        <AreaChart data={data}>
-                            <defs>
-                                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.4} />
-                                    <stop offset="50%" stopColor="#2563eb" stopOpacity={0.2} />
-                                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
+          <XAxis
+            dataKey="date"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={(value: any) =>
+              value.toLocaleDateString("fr-FR", { day: "numeric" })
+            }
+            tick={{ fill: "#64748b", fontSize: 12, fontWeight: 600 }}
+          />
 
-                            <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#f8fafc" />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={(value: number) => value.toLocaleString()}
+            tick={{ fill: "#64748b", fontSize: 12, fontWeight: 600 }}
+          />
 
-                            <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={12}
-                                tickFormatter={(value: any) =>
-                                    value.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" })
-                                }
-                                tick={{ fill: "#64748b", fontSize: 13, fontWeight: 600 }}
-                            />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ fill: "rgb(255,255,255)" }}
+          />
 
-                            <YAxis
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={12}
-                                tickFormatter={(value: number) => value.toLocaleString()}
-                                tick={{ fill: "#64748b", fontSize: 13, fontWeight: 600 }}
-                            />
+          <Legend
+            height={40}
+            wrapperStyle={{
+              paddingTop: "8px",
+              paddingBottom: "4px",
+              fontSize: "12px",
+            }}
+          />
 
-                            <Tooltip
-                                content={<CustomTooltip />}
-                                cursor={{
-                                    fill: "rgb(255, 255, 255)",
-                                }}
-                            />
+          <Area
+            dataKey="A"
+            name="Appels A"
+            stroke="#2563eb"
+            strokeWidth={3}
+            fill="url(#gradient)"
+            type="monotone"
+          />
+          <Area dataKey="B" name="Appels B" stroke="#60a5fa" strokeWidth={3} fill="none" type="monotone" />
+          <Area dataKey="C" name="Appels C" stroke="#1d4ed8" strokeWidth={3} fill="none" type="monotone" />
+        </AreaChart>
+      </ResponsiveContainer>
+    )}
+  </div>
+</div>
 
-                            <Legend height={50} wrapperStyle={{ paddingTop: "16px", paddingBottom: "8px" }} />
-
-                            <Area
-                                dataKey="A"
-                                name="Appels A"
-                                stroke="#2563eb"
-                                strokeWidth={3}
-                                fill="url(#gradient)"
-                                fillOpacity={1}
-                                type="monotone"
-                            />
-                            <Area dataKey="B" name="Appels B" stroke="#60a5fa" strokeWidth={3} fill="none" type="monotone" />
-                            <Area dataKey="C" name="Appels C" stroke="#1d4ed8" strokeWidth={3} fill="none" type="monotone" />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                )}
-            </div>
-        </div>
     );
 };
 
