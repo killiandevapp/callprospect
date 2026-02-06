@@ -108,7 +108,6 @@ export async function login(req: Request, res: Response) {
   // Set cookies
   res.cookie(REFRESH_COOKIE, refreshToken, cookieOptions({ maxAgeMs: expiresAt.getTime() - Date.now(), httpOnly: true }));
   res.cookie(CSRF_COOKIE, csrf, cookieOptions({ maxAgeMs: 86400000, httpOnly: false }));
-
   return res.json({ accessToken });
 }
 
@@ -125,6 +124,7 @@ export async function refresh(req: Request, res: Response) {
   }
 
   const oldHash = sha256Hex(refreshToken);
+  
   const stored = await findRefreshByHash(oldHash);
 
   if (!stored || stored.revoked_at || new Date(stored.expires_at).getTime() < Date.now()) {
