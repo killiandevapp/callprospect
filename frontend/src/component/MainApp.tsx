@@ -1,5 +1,5 @@
 // MainApp.tsx
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { api } from "../api/axios";
 import AddProspects from "./AddProspects";
 import CallProspects from "./CallProspects";
@@ -13,6 +13,12 @@ type MainAppProps = {
 export default function MainApp({ user, logout }: MainAppProps) {
   const [hasProspects, setHasProspects] = useState<boolean | null>(null);
   const [showAddProspects, setShowAddProspects] = useState(false);
+  const [triggerAddCall, setTriggerAddCall] = useState(false);
+ useEffect(()=> {
+   console.log(triggerAddCall);
+   triggerAddCall === true ? setShowAddProspects(true) : null;
+    
+ }, [triggerAddCall])
 
   useEffect(() => {
     (async () => {
@@ -35,7 +41,7 @@ export default function MainApp({ user, logout }: MainAppProps) {
 
       {/* Il reste des prospects à appeler */}
       {!loading && hasProspects === true && !showAddProspects && (
-        <CallProspects />
+        <CallProspects    triggerAddCall={triggerAddCall} onToggleCall={setTriggerAddCall}/>
       )}
 
       {/* Aucun prospect + écran "liste terminée" */}

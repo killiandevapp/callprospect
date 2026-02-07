@@ -35,10 +35,18 @@ type CallToSave = {
   durationSec: number;
 };
 
-export default function CallProspects() {
+type CallProspectsProps = {
+  triggerAddCall: boolean;
+  onToggleCall: (value: boolean) => void;
+};
+
+
+export default function CallProspects({triggerAddCall, onToggleCall }: CallProspectsProps) {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+   const [triggerAddProspect, setTriggerAddProspect] = useState<false | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [mode, setMode] = useState<Mode>("list");
@@ -55,6 +63,17 @@ export default function CallProspects() {
   const [meetingCall, setMeetingCall] = useState<CallToSave | null>(null);
 
   const [showRdvModal, setShowRdvModal] = useState(false);
+
+  function toggleCall() {
+    onToggleCall(!triggerAddCall);  // Inverse le booléen du parent
+  }
+  function addProject() {
+    console.log( triggerAddCall )
+    setTriggerAddProspect(false)
+
+  }
+  console.log(triggerAddProspect);
+  
 
   const currentProspect =
     currentIndex !== null &&
@@ -291,7 +310,9 @@ export default function CallProspects() {
       <div className="prospectsContainer">
         <div className="prospectCtnTitleList">
           <h2 className="text-4xl mb-12">Prospects à appeler</h2>
-          <button>Ajouter prospects</button>
+            <button onClick={toggleCall}>
+         Ajouter prospects
+      </button>
         </div>
 
 
