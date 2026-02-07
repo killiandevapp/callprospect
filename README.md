@@ -12,7 +12,7 @@ L’application permet de gérer des campagnes, des prospects, d’enregistrer l
 et d’exploiter un historique clair avec des statistiques basiques.
 
 Projet volontairement pragmatique : pas de sur-ingénierie, mais une architecture propre
-et sécurisée, proche de la réalité terrain.
+et sécurisée, proche de la réalité terrain .
 
 ---
 
