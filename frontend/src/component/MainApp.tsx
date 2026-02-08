@@ -41,7 +41,7 @@ export default function MainApp({ user, logout }: MainAppProps) {
 
       {/* Il reste des prospects à appeler */}
       {!loading && hasProspects === true && !showAddProspects && (
-        <CallProspects    triggerAddCall={triggerAddCall} onToggleCall={setTriggerAddCall}/>
+        <CallProspects  triggerAddCall={triggerAddCall} onToggleCall={setTriggerAddCall}/>
       )}
 
       {/* Aucun prospect + écran "liste terminée" */}
