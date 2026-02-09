@@ -41,7 +41,7 @@ export default function StatsPage() {
                 Analyse par créneau horaire
             </h2>
 
-            {/* 📊 Cartes du haut */}
+            {/* Cartes du haut */}
             <div className="grid grid-cols-1 lg:grid-cols-[55%_40%] gap-6 lg:gap-[5%]">
                 <div className="flex flex-wrap gap-4">
                     <Card title="Refus" value={`${data.refusedPct}%`} />
@@ -66,7 +66,7 @@ export default function StatsPage() {
                 </div>
             </div>
 
-            {/* 📈 Graphiques + stats */}
+            {/* Graphiques + stats */}
             <div className="grid grid-cols-1 lg:grid-cols-[55%_40%] gap-8 lg:gap-[5%]">
                 {/* appels / jour */}
                 <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">

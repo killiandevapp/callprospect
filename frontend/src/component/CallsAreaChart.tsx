@@ -106,7 +106,7 @@ export const LineChart01 = () => {
 
     return (
          <div className="w-full space-y-6">
-  {/* 🎯 SELECTEUR DE DATES */}
+  {/* SELECTEUR DE DATES */}
   <div className="w-full">
     {/* Presets rapides */}
     <div
@@ -135,7 +135,7 @@ export const LineChart01 = () => {
     </div>
   </div>
 
-  {/* 📊 GRAPHIQUE */}
+  {/* GRAPHIQUE */}
   <div
     className="
       w-full

@@ -164,7 +164,7 @@ return (
           ))}
         </div>
 
-        {/* 💻 Desktop : table */}
+        {/* Desktop : table */}
         <div className="hidden lg:block overflow-x-auto bg-white rounded-xl shadow">
           <table className="w-full text-sm">
             <thead className="bg-slate-50">
