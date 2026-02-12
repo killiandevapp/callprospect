@@ -1,7 +1,7 @@
 import React from "react";
 import { formatSecondsToMMSS } from "../utils/utils";
 
-// Types métier pour les résultats d’appel (doivent rester syncro avec le back)
+
 type CallResult = "meeting" | "refused" | "no_answer" | "callback";
 
 // Motif de refus récupéré depuis l’API de campagne
