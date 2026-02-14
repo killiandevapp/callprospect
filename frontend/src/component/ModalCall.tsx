@@ -123,7 +123,7 @@ export default function ModalCall({
                                     key={r.id}
                                     type="button"
                                     onClick={() => {
-                                        // On remonte seulement l’ID, la logique sera géré au parent
+                                        // On remonte seulement l’ID
                                         if (onSelectReason) {
                                             onSelectReason(r.id);
                                         }
