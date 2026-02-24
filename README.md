@@ -74,4 +74,4 @@ et sécurisée, proche de la réalité terrain .
 - Tokens sensibles jamais stockés en localStorage
 - Logique métier simple et explicite
 - Code lisible avant d’être abstrait
-- Pensé pour évoluer (CSV, stats avancées, etc.)
+- Pensé pour évoluer (CSV, stats avancées, maps etc.)
